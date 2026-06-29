@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NC500 — Chris</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1a2332;--surface:#243044;--border:#2d3d54;--border-light:#2d3d54;
+    --text:#e2e8f0;--text2:#8fa3bf;--text3:#4a6080;
+    --blue-bg:#1e3a5f;--blue-text:#60a5fa;
+    --green-bg:#14301e;--green-text:#4ade80;
+    --amber-bg:#2d1f0a;--amber-text:#fbbf24;
+    --red-bg:#2d1414;--red-text:#f87171;
+    --purple-bg:#1e1a3d;--purple-text:#a78bfa;
+    --radius:10px;--radius-sm:6px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6;background:var(--bg);color:var(--text)}
+  .header{background:#111d2e;color:#e2e8f0;padding:1.5rem 2rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .header-title{font-size:24px;font-weight:700;letter-spacing:-.5px}
+  .header-sub{font-size:13px;opacity:.55;margin-top:2px}
+  .header-stats{display:flex;gap:2rem;flex-wrap:wrap}
+  .hstat{text-align:right}
+  .hstat-val{font-size:17px;font-weight:600}
+  .hstat-label{font-size:11px;opacity:.5;margin-top:1px}
+  .quote-bar{background:#0f1825;color:#8fa3bf;padding:.6rem 2rem;font-size:12.5px;font-style:italic;line-height:1.5;border-bottom:1px solid var(--border)}
+  .quote-bar .quote-author{font-style:normal;opacity:.6;font-size:11px;margin-left:6px}
+  .top-nav{background:#1a2332;border-bottom:1px solid var(--border);padding:0 2rem;display:flex;gap:0;overflow-x:auto}
+  .tnav-item{padding:12px 18px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500;transition:all .15s}
+  .tnav-item.on{color:#4ade80;border-bottom-color:#4ade80}
+  .main{width:100%;margin:0;padding:1.5rem;box-sizing:border-box}
+  .section{display:none}.section.on{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:12px}
+  .card-title{font-size:14px;font-weight:600;margin-bottom:10px}
+  .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-base{background:var(--blue-bg);color:var(--blue-text)}
+  .badge-build{background:var(--amber-bg);color:var(--amber-text)}
+  .badge-peak{background:var(--red-bg);color:var(--red-text)}
+  .badge-event{background:var(--green-bg);color:var(--green-text)}
+  .phase-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+  .ptab{padding:5px 14px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--surface);color:var(--text2);font-weight:500}
+  .ptab.on{background:#111d2e;color:#e2e8f0;border-color:var(--text)}
+  .pane{display:none}.pane.on{display:block}
+  .phase-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:1rem;padding:.875rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+  .phase-title{font-size:15px;font-weight:600;margin-bottom:3px}
+  .phase-meta{font-size:12px;color:var(--text2)}
+  .tip{background:var(--bg);border-left:3px solid var(--blue-text);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:9px 12px;margin-top:.875rem;font-size:12px;color:var(--text2);line-height:1.6}
+  .atbl{width:100%;font-size:12px;border-collapse:collapse;margin-top:.5rem}
+  .atbl th{text-align:left;color:var(--text3);font-weight:600;padding:5px 8px;border-bottom:1px solid var(--border);font-size:11px}
+  .atbl td{padding:6px 8px;border-bottom:1px solid var(--border-light);color:var(--text2)}
+  .atbl tr:last-child td{border-bottom:none}
+  .atbl tr:nth-child(even) td{background:var(--bg)}
+  .trow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem}
+  .tc{background:var(--bg);border-radius:var(--radius-sm);padding:.75rem;text-align:center}
+  .tc-label{font-size:11px;color:var(--text3);margin-bottom:3px}
+  .tc-now{font-size:12px;color:var(--text2)}
+  .sep{font-size:11px;color:var(--text3);margin:2px 0}
+  .tc-goal{font-size:18px;font-weight:600}
+  .bikes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+  .bike{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem}
+  .bike-name{font-weight:600;font-size:13px;margin-bottom:2px}
+  .bike-role{font-size:12px;color:var(--text2);margin-bottom:4px}
+  .bike-note{font-size:11px;color:var(--text3);border-top:1px solid var(--border-light);padding-top:5px;margin-top:4px}
+  .context{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;font-size:13px;line-height:1.7;color:var(--text2)}
+  .context h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:.4rem}
+  .context ul{padding-left:1.2rem;margin-top:.2rem}
+  .context li{margin-bottom:3px}
+  .wl{list-style:none;padding:0;margin:0 0 8px}
+  .wl li{font-size:12px;color:var(--text2);padding:3px 0;border-bottom:1px solid var(--border-light);display:flex;gap:7px}
+  .wl li:last-child{border-bottom:none}
+  .wk{color:var(--text3);min-width:22px;font-size:11px;padding-top:1px;flex-shrink:0;font-weight:600}
+  .mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:1rem}
+  .mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem}
+
+  /* ---- legend ---- */
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:1rem;padding:.75rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:12px}
+  .legend-item{display:flex;align-items:center;gap:6px;color:var(--text2)}
+  .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .dot-Z{background:var(--blue-text)}
+  .dot-R{background:var(--green-text)}
+  .dot-M{background:var(--purple-text)}
+  .dot-X{background:var(--text3)}
+
+  /* ---- week cards / calendar grid ---- */
+  .week-filter-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .week-filter-bar select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit}
+  .week-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:12px}
+  .week-card.benchmark{border-color:#d4b44a}
+  .week-card.current-week{border-color:#4ade80;border-width:2px;box-shadow:0 0 0 3px rgba(74,222,128,0.12)}
+  .current-week-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green-bg);color:var(--green-text);margin-left:6px}
+  .week-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+  .week-num{font-size:12px;color:var(--text3);font-weight:600}
+  .week-tag{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
+  .week-tag-Benchmark{background:var(--amber-bg);color:var(--amber-text)}
+  .week-tag-Training{background:var(--blue-bg);color:var(--blue-text)}
+  .week-tag-Milestone{background:var(--green-bg);color:var(--green-text)}
+  .week-tag-Event{background:var(--red-bg);color:var(--red-text)}
+  .week-tag-Holiday{background:var(--red-bg);color:var(--red-text)}
+  .week-tag-Recovery{background:var(--bg);color:var(--text2)}
+  .week-tag-Maintain{background:var(--bg);color:var(--text2)}
+  .week-tag-Reset{background:var(--bg);color:var(--text2)}
+  .week-tag-Taper{background:var(--purple-bg);color:var(--purple-text)}
+  .week-title{font-size:15px;font-weight:700;margin-bottom:2px}
+  .week-dates{font-size:11px;color:var(--text3);margin-bottom:10px}
+  .day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px;position:relative}
+  .day-col{display:flex;flex-direction:column;gap:4px}
+  .day-name{font-size:10px;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+  .day-cell{border-radius:var(--radius-sm);padding:8px 4px;text-align:center;font-size:11px;font-weight:600;min-height:46px;display:flex;align-items:center;justify-content:center;line-height:1.3}
+  .day-cell.type-Z{background:var(--blue-bg);color:var(--blue-text)}
+  .day-cell.type-R{background:var(--green-bg);color:var(--green-text)}
+  .day-cell.type-M{background:var(--purple-bg);color:var(--purple-text)}
+  .day-cell.type-X{background:var(--bg);color:var(--text3);font-weight:500}
+  .day-cell.expandable{cursor:pointer;position:relative;padding-right:14px}
+  .day-cell.expandable:active{opacity:.8}
+  .expand-hint{position:absolute;bottom:2px;right:3px;font-size:8px;opacity:.55;transition:transform .15s}
+  .day-cell.open .expand-hint{transform:rotate(180deg)}
+  .day-expand{grid-column:1/-1;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 10px 8px;margin-top:6px;animation:dayExpandIn .12s ease-out}
+  .day-expand-arrow{position:absolute;top:-7px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--border);border-top:1px solid var(--border);transform:translateX(-50%) rotate(45deg)}
+  @keyframes dayExpandIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .day-expand-zone{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px}
+  .day-expand-workout{font-size:11px;color:var(--text2);line-height:1.5}
+  .day-expand-interval{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid var(--border-light)}
+  .week-note{background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;color:var(--text2);line-height:1.6}
+
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+  .form-group{display:flex;flex-direction:column;gap:4px}
+  .form-group label{font-size:12px;color:var(--text2)}
+  .form-group input,.form-group select,.form-group textarea{font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);width:100%;font-family:inherit}
+  .form-group textarea{resize:vertical;min-height:60px}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--text)}
+  .btn{padding:7px 16px;font-size:13px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-weight:500}
+  .btn:hover{background:var(--bg)}
+  .btn-primary{background:#111d2e;color:#e2e8f0;border-color:var(--text)}
+  .btn-primary:hover{background:#22c55e}
+  .btn-danger{background:var(--red-bg);color:var(--red-text);border-color:var(--red-text)}
+  .btn-danger:hover{background:#f8d4d4}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .tag{display:inline-block;padding:2px 7px;border-radius:12px;font-size:11px;background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+  .tag-Z{background:var(--blue-bg);color:var(--blue-text)}
+  .tag-R{background:var(--green-bg);color:var(--green-text)}
+  .tag-M{background:var(--purple-bg);color:var(--purple-text)}
+  .ride-row{display:flex;gap:1rem;padding:10px 0;border-bottom:1px solid var(--border-light);align-items:flex-start}
+  .ride-row:last-child{border-bottom:none}
+  .ride-date{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+  .ride-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .ride-main{font-size:14px;font-weight:600;color:var(--text)}
+  .month-hdr{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;margin-top:4px}
+  .sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px}
+  .sum-cell{background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;text-align:center}
+  .sum-label{font-size:10px;color:var(--text3);margin-bottom:2px}
+  .sum-val{font-size:14px;font-weight:600;color:var(--text)}
+  .empty{text-align:center;color:var(--text3);padding:2rem;font-size:13px}
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+  .filter-row select{font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit}
+  .bm-row{display:flex;gap:.75rem;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-light);flex-wrap:wrap}
+  .bm-row:last-child{border-bottom:none}
+  .bm-date{font-size:12px;font-weight:600;min-width:80px}
+  .bm-val{font-size:18px;font-weight:700}
+  .bm-sub{font-size:11px;color:var(--text3)}
+  .bm-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+  .bm-badge-ftp{background:var(--blue-bg);color:var(--blue-text)}
+  .bm-badge-alpe{background:var(--amber-bg);color:var(--amber-text)}
+  .bm-badge-vo2{background:var(--purple-bg);color:var(--purple-text)}
+
+  /* ---- Google Sheets setup banner ---- */
+  .gs-banner{background:#fff8e6;border:1px solid #e8c84a;border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;font-size:13px}
+  .gs-banner h3{font-size:14px;font-weight:600;color:#7a4a08;margin-bottom:.5rem}
+  .gs-banner p{color:#7a4a08;margin-bottom:.5rem;line-height:1.6}
+  .gs-url-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:.5rem}
+  .gs-url-row input{flex:1;min-width:200px;font-size:12px;padding:7px 10px;border:1px solid #d4b44a;border-radius:var(--radius-sm);background:#fff;color:var(--text);font-family:inherit}
+  .gs-url-row input:focus{outline:none;border-color:#7a4a08}
+  .gs-status{font-size:12px;padding:4px 10px;border-radius:var(--radius-sm)}
+  .gs-status.ok{background:var(--green-bg);color:var(--green-text)}
+  .gs-status.err{background:var(--red-bg);color:var(--red-text)}
+  .gs-status.loading{background:var(--blue-bg);color:var(--blue-text)}
+  .sync-indicator{font-size:11px;color:var(--text3);padding:2px 0;min-height:18px;transition:all .2s}
+  .sync-indicator.syncing{color:var(--blue-text)}
+  .sync-indicator.synced{color:var(--green-text)}
+  .sync-indicator.error{color:var(--red-text)}
+  /* ---- home tab ---- */
+  .home-wrap{width:100%;box-sizing:border-box}
+  .home-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap}
+  .countdown-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;text-align:center;min-width:100px}
+  .countdown-num{font-size:26px;font-weight:700;color:#4ade80}
+  .countdown-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+  .countdown-sub{font-size:11px;color:var(--text2);margin-top:2px}
+  .home-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .home-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+  .hcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;min-width:0;box-sizing:border-box}
+  .hcard-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+  .hcard-val{font-size:22px;font-weight:700;color:var(--text);line-height:1.1}
+  .hcard-sub{font-size:12px;color:var(--text2);margin-top:3px}
+  .hcard-up{color:var(--green-text);font-weight:600}
+  .hcard-down{color:var(--red-text);font-weight:600}
+  .zone-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)}
+  .zone-row:last-child{border-bottom:none}
+  .this-week-card{background:var(--surface);border:2px solid #4ade80;border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:12px}
+  .hw-day-name{text-align:center;font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:600;letter-spacing:.3px}
+  .hw-day-name.today{color:var(--green-text);font-weight:700}
+  .hw-day-cell{border-radius:var(--radius-sm);padding:6px 4px;text-align:center;font-size:11px;font-weight:600;min-height:44px;display:flex;align-items:center;justify-content:center;line-height:1.3}
+  .hw-Z{background:var(--blue-bg);color:var(--blue-text)}
+  .hw-R{background:var(--green-bg);color:var(--green-text)}
+  .hw-M{background:var(--purple-bg);color:var(--purple-text)}
+  .hw-X{background:var(--bg);color:var(--text3);font-weight:500}
+  .hw-today{background:var(--green-text);color:#fff}
+  .ride-row-home{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light)}
+  .ride-row-home:last-child{border-bottom:none}
+  .bar-wrap{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:3px}
+  .bar-fill{height:7px;border-radius:4px}
+  .food-tap-btn{font-size:11px;font-weight:600;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#1a2d42;color:var(--text);cursor:pointer;font-family:inherit;text-align:center;line-height:1.4;position:relative}
+  .food-tap-btn span{font-size:10px;color:var(--text3);font-weight:400}
+  .food-tap-btn.tapped{border-color:var(--green-text);background:#14301e}
+  .food-tap-btn .ftap-badge{position:absolute;top:-6px;right:-6px;background:var(--green-text);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .settings-tile{background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);padding:.875rem 1.25rem;margin-bottom:12px}
+  .settings-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-light)}
+  .settings-row:last-child{border-bottom:none}
+  .settings-row label{font-size:12px;color:var(--text2);min-width:140px}
+  .settings-row input{font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);width:90px;font-family:inherit}
+  .traffic-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-light)}
+  .traffic-row:last-child{border-bottom:none}
+  .tdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">NC500 — Chris</div>
+    <div class="header-sub">~850 km · Scotland's north coast · Jun/Jul 2026</div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-val">170W</div><div class="hstat-label">Current FTP</div></div>
+    <div class="hstat"><div class="hstat-val">167.6 lbs</div><div class="hstat-label">Current weight</div></div>
+    <div class="hstat"><div class="hstat-val">2.20 W/kg</div><div class="hstat-label">Current W/kg</div></div>
+    <div class="hstat"><div class="hstat-val">230W+</div><div class="hstat-label">Target FTP</div></div>
+  </div>
+</div>
+
+<div class="quote-bar" id="quote-bar">Loading quote…</div>
+
+<div class="top-nav">
+  <div class="tnav-item on" onclick="showSection('home',this)">Home</div>
+  <div class="tnav-item" onclick="showSection('plan',this)">Training plan</div>
+  <div class="tnav-item" onclick="showSection('tracker',this)">Ride tracker</div>
+  <div class="tnav-item" onclick="showSection('benchmarks',this)">Benchmarks</div>
+  <div class="tnav-item" onclick="showSection('event',this)">Event</div>
+</div>
+
+<div class="main">
+
+<!-- ===== HOME ===== -->
+<div class="section on" id="sec-home" style="width:100%">
+  <div id="home-content"><div class="empty" style="padding:2rem;text-align:center;color:var(--text3)">Loading…</div></div>
+</div>
+
+<!-- ===== TRAINING PLAN ===== -->
+<div class="section" id="sec-plan">
+  <div class="phase-nav">
+    <div class="ptab on" onclick="showPhase('base',this)">Base</div>
+    <div class="ptab" onclick="showPhase('build',this)">Build</div>
+    <div class="ptab" onclick="showPhase('peak',this)">Peak</div>
+    <div class="ptab" onclick="showPhase('event',this)">Event</div>
+  </div>
+  <div class="phase-hdr">
+    <div>
+      <div class="phase-title" id="phase-range-label"></div>
+      <div class="phase-meta">Click any coloured day for zone &amp; workout detail</div>
+    </div>
+    <div class="week-filter-bar">
+      <select id="month-filter" onchange="renderWeeks()"><option value="">All months in phase</option></select>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-Z"></div>Zwift</div>
+    <div class="legend-item"><div class="legend-dot dot-R"></div>Road</div>
+    <div class="legend-item"><div class="legend-dot dot-M"></div>MTB</div>
+    <div class="legend-item"><div class="legend-dot dot-X"></div>Rest / Off</div>
+  </div>
+  <div id="weeks-container"></div>
+</div>
+
+<!-- ===== RIDE TRACKER ===== -->
+<div class="section" id="sec-tracker">
+
+  <!-- Google Sheets setup banner -->
+  <div class="gs-banner" id="gs-setup-banner" style="display:none">
+    <h3>⚡ Connect Google Sheets for cross-device sync</h3>
+    <p>Paste your Google Apps Script URL below to save rides to your sheet. See the setup guide in the downloaded README.</p>
+    <div class="gs-url-row">
+      <input type="url" id="gs-url-input" placeholder="https://script.google.com/macros/s/…/exec" oninput="gsUrlChanged()">
+      <button class="btn btn-primary" onclick="testGsConnection()">Test connection</button>
+      <button class="btn" onclick="gsSetupDone()">Skip (use local only)</button>
+    </div>
+    <div id="gs-test-status" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Sheets status bar (shown when connected) -->
+  <div id="gs-status-bar" style="display:none;margin-bottom:10px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--green-text);font-weight:600">● Google Sheets connected</span>
+      <span style="color:var(--text3)" id="gs-sheet-name"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sync-indicator" id="sync-indicator"></div>
+      <button class="btn" style="font-size:11px;padding:3px 10px" onclick="refreshFromSheets()">↻ Refresh</button>
+      <button class="btn" style="font-size:11px;padding:3px 10px" onclick="showGsSetup()">Change URL</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="form-title">Log a ride</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="f-date"></div>
+      <div class="form-group"><label>Bike type</label>
+        <select id="f-type">
+          <option value="Z">Z — Zwift</option>
+          <option value="R">R — Road</option>
+          <option value="M">M — MTB</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Distance (mi)</label><input type="number" id="f-dist" step="0.1" placeholder="—"></div>
+      <div class="form-group"><label>Elevation (ft)</label><input type="number" id="f-elev" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Time — hrs</label><input type="number" id="f-hrs" step="1" min="0" placeholder="0"></div>
+      <div class="form-group"><label>Time — min</label><input type="number" id="f-min" step="1" min="0" max="59" placeholder="0"></div>
+      <div class="form-group"><label>Time — sec</label><input type="number" id="f-sec" step="1" min="0" max="59" placeholder="0"></div>
+      <div class="form-group"><label>NP / Avg Power (W)</label><input type="number" id="f-np" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Avg HR (bpm)</label><input type="number" id="f-hr" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Max HR (bpm)</label><input type="number" id="f-maxhr" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Energy (kJ)</label><input type="number" id="f-kj" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Weight (lbs)</label><input type="number" id="f-weight" step="0.1" value="167.6"></div>
+      <div class="form-group"><label>FTP (W)</label><input type="number" id="f-ftp" step="1" value="170"></div>
+      <div class="form-group"><label>Exercise Load</label><input type="number" id="f-load" step="1" placeholder="—"></div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;margin-top:4px">Post-ride (from Garmin)</div>
+    <div class="form-grid">
+      <div class="form-group"><label>VO2max</label><input type="number" id="f-vo2" step="0.1" placeholder="—"></div>
+      <div class="form-group"><label>HRV 7-day avg (ms)</label><input type="number" id="f-hrv" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Recovery time (hrs)</label><input type="number" id="f-recovery" step="1" placeholder="—"></div>
+      <div class="form-group"><label>Training status</label>
+        <select id="f-tstatus">
+          <option value="">— select —</option>
+          <option value="Productive">Productive</option>
+          <option value="Maintaining">Maintaining</option>
+          <option value="Peaking">Peaking</option>
+          <option value="Detraining">Detraining</option>
+          <option value="Overreaching">Overreaching</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>Route / Venue</label><input type="text" id="f-route" placeholder="e.g. Zwift Watopia, Stone Mountain, Three Gap…"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Notes</label><textarea id="f-notes" placeholder="How did it feel? Any observations…"></textarea></div>
+    </div>
+    <!-- Fuelling logger -->
+    <div style="margin-top:4px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)">Nutrition during ride <span style="font-size:11px;font-weight:400;color:var(--text3)">(optional)</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Tap to add — stacks on multiple taps</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px" id="food-btns">
+        <button class="food-tap-btn" onclick="foodTap(this,30,'GO Bake')">GO Bake<br><span>30g</span></button>
+        <button class="food-tap-btn" onclick="foodTap(this,40,'Oat Bar')">Oat Bar<br><span>40g · pre/stop</span></button>
+        <button class="food-tap-btn" onclick="foodTap(this,22,'GO Gel')">GO Gel<br><span>22g</span></button>
+        <button class="food-tap-btn" onclick="foodTap(this,45,'BETA Chews')">BETA Chews<br><span>45g/pack</span></button>
+        <button class="food-tap-btn" onclick="foodTap(this,24,'Clif Bloks')">Clif Bloks<br><span>24g</span></button>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="font-size:11px;color:var(--text2)">Other (g)</div>
+          <div style="display:flex;gap:4px">
+            <input type="number" id="food-other-g" style="width:60px;font-size:12px;padding:5px 6px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit" placeholder="g">
+            <button onclick="foodOther()" style="font-size:11px;padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit">+</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Bottles</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button id="btn-hydro" onclick="bottleTap('hydro')" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600">+ Hydro 💧</button>
+        <button id="btn-beta" onclick="bottleTap('beta')" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600">+ BETA Fuel ⚡ +80g</button>
+        <button onclick="clearFood()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;font-family:inherit">Clear</button>
+      </div>
+      <div id="food-summary" style="font-size:12px;color:var(--text2);min-height:18px"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" id="save-btn" onclick="saveRide()">Save ride</button>
+      <button class="btn" id="cancel-edit-btn" style="display:none" onclick="cancelEdit()">Cancel</button>
+      <span id="log-status" style="font-size:12px;color:var(--green-text)"></span>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <a id="sheet-link" href="#" target="_blank" style="font-size:12px;color:var(--blue-text);text-decoration:none;display:none">📊 Open Google Sheet ↗</a>
+  </div>
+  <div class="card">
+    <div class="card-title">Monthly summary</div>
+    <div id="mini-summary"><div class="empty">No rides logged yet.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ride history</div>
+    <div class="filter-row">
+      <select id="filter-type" onchange="renderHistory()">
+        <option value="">All types</option>
+        <option value="Z">Zwift (Z)</option>
+        <option value="R">Road (R)</option>
+        <option value="M">MTB (M)</option>
+      </select>
+      <select id="filter-month" onchange="renderHistory()"><option value="">All months</option></select>
+    </div>
+    <div id="history-list"><div class="empty">No rides yet.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">W/kg calculator</div>
+    <div class="form-grid" style="max-width:320px">
+      <div class="form-group"><label>FTP (W)</label><input type="number" id="wkg-ftp" value="170" oninput="calcWkg()"></div>
+      <div class="form-group"><label>Weight (lbs)</label><input type="number" id="wkg-lbs" value="167.6" oninput="calcWkg()"></div>
+    </div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:4px" id="wkg-result">—</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px" id="wkg-cat"></div>
+    <div class="sum-grid" id="wkg-table"></div>
+  </div>
+</div>
+
+<!-- ===== BENCHMARKS ===== -->
+<div class="section" id="sec-benchmarks">
+  <div class="card">
+    <div class="card-title">FTP progression targets</div>
+    <table class="atbl">
+      <thead><tr><th>Month</th><th>Target FTP</th><th>Target W/kg</th><th>Weight target</th><th>Benchmark</th></tr></thead>
+      <tbody>
+        <tr><td>Jun 2025</td><td>170W</td><td>2.20</td><td>170 lbs</td><td>Ramp test baseline</td></tr>
+        <tr><td>Jul 2025</td><td>175W</td><td>2.28</td><td>168 lbs</td><td>Ramp + Alpe attempt</td></tr>
+        <tr><td>Aug 2025</td><td>185W</td><td>2.43</td><td>167 lbs</td><td>Ramp + Alpe (&lt;100 min goal)</td></tr>
+        <tr><td>Sep 2025</td><td>190W</td><td>2.51</td><td>166 lbs</td><td>Three Gap go/no-go gate</td></tr>
+        <tr><td>Oct 2025</td><td>195W</td><td>2.59</td><td>165 lbs</td><td>Ramp + Alpe (&lt;90 min goal)</td></tr>
+        <tr><td>Nov 2025</td><td>205W</td><td>2.74</td><td>164 lbs</td><td>Ramp + Alpe (&lt;85 min goal)</td></tr>
+        <tr><td>Dec 2025</td><td>205W</td><td>2.74</td><td>163 lbs</td><td>Maintain (holiday month)</td></tr>
+        <tr><td>Jan 2026</td><td>210W</td><td>2.82</td><td>162 lbs</td><td>Ramp + Alpe (&lt;80 min goal)</td></tr>
+        <tr><td>Feb 2026</td><td>220W</td><td>2.97</td><td>161 lbs</td><td>Ramp + Alpe (&lt;75 min goal)</td></tr>
+        <tr><td>Mar 2026</td><td>230W</td><td>3.12</td><td>160 lbs</td><td>Ramp + Alpe (&lt;70 min goal)</td></tr>
+        <tr><td>Apr 2026</td><td>230W</td><td>3.11</td><td>160 lbs</td><td>April sim tour — NC500 pace check</td></tr>
+        <tr><td>May 2026</td><td>230W+</td><td>3.20+</td><td>160 lbs</td><td>Final Alpe (&lt;65 min goal)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">Alpe du Zwift time targets</div>
+    <div class="tip">Current best: ~90 min (at peak fitness before). Starting point ~105 min. Each benchmark, aim to shave 3–5 minutes. Sub-65 min is the May 2026 target — that's Cat 3 territory on the Alpe.</div>
+    <div class="trow">
+      <div class="tc"><div class="tc-label">Current est.</div><div class="tc-now">~105 min</div><div class="sep">→</div><div class="tc-goal" style="color:var(--amber-text)">~90 min</div><div class="tc-label">Aug target</div></div>
+      <div class="tc"><div class="tc-label">Mid-plan</div><div class="tc-now">~90 min</div><div class="sep">→</div><div class="tc-goal" style="color:var(--blue-text)">~75 min</div><div class="tc-label">Jan target</div></div>
+      <div class="tc"><div class="tc-label">Peak</div><div class="tc-now">~75 min</div><div class="sep">→</div><div class="tc-goal" style="color:var(--green-text)">&lt;65 min</div><div class="tc-label">May target</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Three Gap go/no-go gate</div>
+    <div class="tip">Target event: Three Gap Fifty — 58 miles / ~6,000 ft — late September 2025. Go/no-go decision before early-Sep work trip.<br><br><strong>Gate criteria:</strong> August Alpe du Zwift ≤ 95 min AND 4-week TSS trend improving. If yes → register and add Three Gap build weeks to September plan.</div>
+  </div>
+</div>
+
+<!-- ===== EVENT ===== -->
+<div class="section" id="sec-event">
+  <div class="bikes">
+    <div class="bike"><div class="bike-name">R — Road bike</div><div class="bike-role">Primary training + NC500</div><div class="bike-note">Power meter · All structured sessions</div></div>
+    <div class="bike"><div class="bike-name">E — E-bike</div><div class="bike-role">Recovery &amp; family rides</div><div class="bike-note">Power meter · Keep under 50% FTP</div></div>
+    <div class="bike"><div class="bike-name">M — MTB</div><div class="bike-role">Fun / active recovery</div><div class="bike-note">No power meter · Max once/week</div></div>
+  </div>
+  <div class="context">
+    <h3>NC500 Overview</h3>
+    <p>~850 km around Scotland's north coast. RV support from a friend. Day count (5, 6, or 7) to be decided after the April simulation tour. Plan assumes ~130–170 km/day depending on day count.</p>
+    <ul>
+      <li>Start/finish: Inverness</li>
+      <li>Elevation: ~8,000–10,000 m total (variable by route)</li>
+      <li>Key climbs: Bealach na Bà, Applecross, Kylesku, multiple coastal headlands</li>
+      <li>Target pace: Z2 endurance with Z3 on climbs — NC500 is a multi-day event, not a race</li>
+    </ul>
+  </div>
+  <div class="context">
+    <h3>Atlanta training context</h3>
+    <ul>
+      <li><strong>Jun–Aug:</strong> Zwift indoors — Atlanta summer heat makes outdoor riding impractical</li>
+      <li><strong>Sep onward:</strong> Stone Mountain Park — ~12.3 mi loop, ~849 ft elevation</li>
+      <li><strong>April block:</strong> North Georgia mountains (Three Gap / Dahlonega-Suches area) — the single most important training block</li>
+    </ul>
+  </div>
+  <div class="context">
+    <h3>Zone 2 on variable terrain</h3>
+    <p>Zone 2 compliance on rolling terrain like Stone Mountain means targeting Z2 on flats and descents while accepting Z3 on climbs. Rigid HR ceiling enforcement isn't appropriate on variable terrain. Power is the primary metric; HR is a secondary fatigue check.</p>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+/* ============================================================
+   GOOGLE SHEETS BACKEND
+   ============================================================ */
+const GS_URL_KEY = 'nc500-gs-url';
+const STORAGE_KEY = 'nc500-rides-v2'; // bumped version for new fields
+
+let _gsUrl = localStorage.getItem(GS_URL_KEY) || 'https://script.google.com/macros/s/AKfycbzKeYXYn-nVKSkBbYe0JjTuAygzrJB5I-v3w5DxDrMO3ShCoknPmTaTmsWNSzv8y0mq/exec';
+let _ridesCache = null; // in-memory cache to avoid redundant fetches
+
+function getGsUrl(){ return _gsUrl; }
+
+function gsUrlChanged(){
+  _gsUrl = document.getElementById('gs-url-input').value.trim();
+}
+
+function showGsSetup(){
+  document.getElementById('gs-setup-banner').style.display = 'block';
+  document.getElementById('gs-url-input').value = _gsUrl;
+  document.getElementById('gs-status-bar').style.display = 'none';
+}
+
+function gsSetupDone(){
+  document.getElementById('gs-setup-banner').style.display = 'none';
+  updateStatusBar();
+}
+
+function updateStatusBar(){
+  const bar = document.getElementById('gs-status-bar');
+  if(_gsUrl){
+    bar.style.display = 'flex';
+    document.getElementById('gs-setup-banner').style.display = 'none';
+  } else {
+    bar.style.display = 'none';
+    document.getElementById('gs-setup-banner').style.display = 'block';
+  }
+}
+
+function setSyncStatus(state, msg){
+  const el = document.getElementById('sync-indicator');
+  if(!el) return;
+  el.className = 'sync-indicator ' + state;
+  el.textContent = msg;
+}
+
+async function testGsConnection(){
+  const url = document.getElementById('gs-url-input').value.trim();
+  if(!url){ document.getElementById('gs-test-status').innerHTML = '<span class="gs-status err">Enter a URL first</span>'; return; }
+  document.getElementById('gs-test-status').innerHTML = '<span class="gs-status loading">Testing…</span>';
+  try{
+    const resp = await fetch(url + '?action=ping', {method:'GET'});
+    const text = await resp.text();
+    const data = JSON.parse(text);
+    if(data.ok){
+      _gsUrl = url;
+      localStorage.setItem(GS_URL_KEY, url);
+      _ridesCache = null;
+      document.getElementById('gs-test-status').innerHTML = '<span class="gs-status ok">✓ Connected — sheet: ' + (data.sheetName||'NC500 Rides') + '</span>';
+      document.getElementById('gs-sheet-name').textContent = data.sheetName || 'NC500 Rides';
+      setTimeout(()=>{ gsSetupDone(); renderHistory(); renderMiniSummary(); }, 1200);
+    } else {
+      document.getElementById('gs-test-status').innerHTML = '<span class="gs-status err">Script returned error: ' + (data.error||'unknown') + '</span>';
+    }
+  } catch(e){
+    document.getElementById('gs-test-status').innerHTML = '<span class="gs-status err">Could not reach script. Check URL and deployment settings.</span>';
+  }
+}
+
+/* ---- Core storage: Google Sheets via JSONP (bypasses CORS) ---- */
+function jsonp(url){
+  return new Promise((resolve, reject)=>{
+    const cb = 'nc500cb_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 8000);
+    function cleanup(){ delete window[cb]; script.remove(); clearTimeout(timeout); }
+    window[cb] = (data)=>{ cleanup(); resolve(data); };
+    script.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
+    script.onerror = ()=>{ cleanup(); reject(new Error('script error')); };
+    document.head.appendChild(script);
+  });
+}
+
+async function loadRides(){
+  if(_ridesCache) return _ridesCache;
+  if(_gsUrl){
+    setSyncStatus('syncing','Syncing…');
+    try{
+      const data = await jsonp(_gsUrl + '?action=list');
+      if(data.ok){
+        _ridesCache = data.rides || [];
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(_ridesCache)); }catch(e){}
+        setSyncStatus('synced','Synced ✓');
+        setTimeout(()=>setSyncStatus('',''), 2000);
+        return _ridesCache;
+      }
+    } catch(e){
+      setSyncStatus('error','Sync error — using local cache');
+    }
+  }
+  try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; }
+}
+
+async function saveRides(rides){
+  _ridesCache = rides;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(rides)); }catch(e){}
+  if(!_gsUrl) return;
+  setSyncStatus('syncing','Saving…');
+  // Try JSONP with base64-encoded rides to avoid URL encoding issues
+  try{
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(rides))));
+    const data = await jsonp(_gsUrl + '?action=saveAll&b64rides=' + b64);
+    if(data.ok){
+      setSyncStatus('synced','Saved ✓');
+      setTimeout(()=>setSyncStatus('',''), 2000);
+    } else {
+      setSyncStatus('error','Save error: ' + (data.error||''));
+    }
+  } catch(e){
+    setSyncStatus('error','Save failed — stored locally');
+  }
+}
+
+/* ---- Init: show banner if no URL saved ---- */
+function initGsSetup(){
+  if(_gsUrl){
+    document.getElementById('gs-setup-banner').style.display = 'none';
+    document.getElementById('gs-status-bar').style.display = 'flex';
+    document.getElementById('gs-url-input').value = _gsUrl;
+    // Wire up sheet link — derive sheet URL from script URL
+    const sheetLink = document.getElementById('sheet-link');
+    if(sheetLink){ sheetLink.style.display='inline'; sheetLink.href='https://docs.google.com/spreadsheets/d/1jn4LyTnMHPPyM2eB03gZSCmPzrMQYiBGKRMQhF_Vppg/edit?gid=372953866#gid=372953866'; }
+  } else {
+    document.getElementById('gs-setup-banner').style.display = 'block';
+    document.getElementById('gs-status-bar').style.display = 'none';
+  }
+}
+
+/* ============================================================
+   TRAINING PLAN DATA
+   ============================================================ */
+const WEEKS = [
+  {week:1,phase:'base',month_label:'June',tag:'Benchmark',start:'2026-06-15',end:'2026-06-21',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1.5h'},{type:'X',label:'Rest'}],note:'Day 2 (Tue): First FTP ramp test. Rest Wed. Day 4 (Thu): Baseline Alpe du Zwift attempt ~90 min (data only). Sets all training zones.'},
+  {week:2,phase:'base',month_label:'June',tag:'Training',start:'2026-06-22',end:'2026-06-28',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 45m'},{type:'Z',label:'Z3 4x5min (45m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'First full training week. FTP confirmed at 170W. Keep it Zwift-only — too hot outside.'},
+  {week:3,phase:'base',month_label:'July',tag:'Training',start:'2026-06-29',end:'2026-07-05',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'Z',label:'Z3 2x15min (1h)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1.5h'},{type:'X',label:'Rest'}],note:'Building duration. One ride extends to 90 min this week.'},
+  {week:4,phase:'base',month_label:'July',tag:'Training',start:'2026-07-06',end:'2026-07-12',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'Z',label:'Z3 2x15min (1h)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'One structured Z3 session mid-week. Stone Mountain stays off until W3.'},
+  {week:5,phase:'base',month_label:'July',tag:'Milestone',start:'2026-07-13',end:'2026-07-19',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'Z',label:'Z3 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 25–30mi'},{type:'Z',label:'Easy 30m'}],note:'First Stone Mountain outing — 25–30 mi, 6am start to beat the heat. Zwift for the rest of the week. ⚠️ Tue Jul 15: HR drift retest — repeat Jun 24 session (130W, 10m warmup + 40m steady) and compare avg HR. Target: 10–15 bpm lower than 149 bpm baseline.'},
+  {week:6,phase:'base',month_label:'July',tag:'Holiday',start:'2026-07-20',end:'2026-07-26',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'}],note:'Holiday Jul 21–31. Easy riding or full rest — no targets this week.'},
+  {week:7,phase:'base',month_label:'August',tag:'Holiday',start:'2026-07-27',end:'2026-08-02',benchmark:false,days:[{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Easy 45m'},{type:'X',label:'Rest'}],note:'Back from holiday. Easy Zwift to re-engage. First Alpe attempt this week — just complete it and note the time.'},
+  {week:8,phase:'base',month_label:'August',tag:'Training',start:'2026-08-03',end:'2026-08-09',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Alpe du Zwift (1st attempt) (1h30m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'Sweet spot intro: 2x15min @ 88% FTP. First Stone Mountain ride of the month — 30 mi Saturday.'},
+  {week:9,phase:'base',month_label:'August',tag:'Training',start:'2026-08-10',end:'2026-08-16',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'R',label:'Stone Mtn 25mi'}],note:'Stone Mountain back-to-back weekend: Sat 40mi + Sun 25mi, 6am starts both days.'},
+  {week:10,phase:'base',month_label:'August',tag:'Benchmark',start:'2026-08-17',end:'2026-08-23',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'}],note:'Recovery week. FTP test + Alpe du Zwift. Target: 185W / sub-90 min. This Alpe result is the Three Gap Fifty go/no-go.'},
+  {week:11,phase:'base',month_label:'September',tag:'Holiday',start:'2026-08-24',end:'2026-08-30',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:"Away on a work trip. Easy or rest — don't force training this week."},
+  {week:12,phase:'base',month_label:'September',tag:'Training',start:'2026-08-31',end:'2026-09-06',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40–50mi'},{type:'Z',label:'Easy 30m'}],note:'Back from travel. Stone Mountain 40–50mi. Zwift sweet spot mid-week.'},
+  {week:13,phase:'base',month_label:'September',tag:'Event',start:'2026-09-07',end:'2026-09-13',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Three Gap Fifty (58mi/6000ft)'},{type:'R',label:'Easy recovery spin (30m)'}],note:'Three Gap Fifty (Sep 27/28) — conditional on Aug Alpe sub-90min. 58mi / 6,000ft out of Dahlonega. Ride easy, walk steep bits, finish it. Preview of the April tour route.'},
+  {week:14,phase:'base',month_label:'September',tag:'Benchmark',start:'2026-09-14',end:'2026-09-20',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy spin (30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery after Three Gap. FTP test. Target: 190W.'},
+  {week:15,phase:'build',month_label:'October',tag:'Training',start:'2026-09-21',end:'2026-09-27',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'Z',label:'Easy 30m'}],note:'Sweet spot 2x20min @ 88–93% FTP. Stone Mountain 40mi Saturday.'},
+  {week:16,phase:'build',month_label:'October',tag:'Training',start:'2026-09-28',end:'2026-10-04',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'VO2 5x4min (45m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 50mi'},{type:'R',label:'Stone Mtn 30mi'}],note:'VO2max: 5x4min on Zwift. Stone Mountain back-to-back: 50mi Sat + 30mi Sun.'},
+  {week:17,phase:'build',month_label:'October',tag:'Milestone',start:'2026-10-05',end:'2026-10-11',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 60mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Stone Mountain 60mi big day. Use the car as a feed station between loops.'},
+  {week:18,phase:'build',month_label:'October',tag:'Benchmark',start:'2026-10-12',end:'2026-10-18',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 195W / sub-85 min.'},
+  {week:19,phase:'build',month_label:'November',tag:'Holiday',start:'2026-10-19',end:'2026-10-25',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Away on a work trip. Extra recovery — easy Zwift only.'},
+  {week:20,phase:'build',month_label:'November',tag:'Training',start:'2026-10-26',end:'2026-11-01',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 3x20min (1h45m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 60mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Back. Sweet spot 3x20min on Zwift. Stone Mountain 60mi.'},
+  {week:21,phase:'build',month_label:'November',tag:'Milestone',start:'2026-11-02',end:'2026-11-08',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 75mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Stone Mountain 75mi big day. Nutrition focus — eat every 45 min, no exceptions.'},
+  {week:22,phase:'build',month_label:'November',tag:'Benchmark',start:'2026-11-09',end:'2026-11-15',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 205W / sub-80 min.'},
+  {week:23,phase:'build',month_label:'December',tag:'Maintain',start:'2026-11-16',end:'2026-11-22',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 45m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'Z',label:'Easy spin (30m)'}],note:"Maintain, don't build. Sweet spot session + Stone Mountain 40mi."},
+  {week:24,phase:'build',month_label:'December',tag:'Holiday',start:'2026-11-23',end:'2026-11-29',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Zwift only this week.'},
+  {week:25,phase:'build',month_label:'December',tag:'Holiday',start:'2026-11-30',end:'2026-12-06',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'}],note:"Holiday week — Zwift when you can, don't stress about consistency."},
+  {week:26,phase:'build',month_label:'December',tag:'Reset',start:'2026-12-07',end:'2026-12-13',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:"Easy Zwift spins. Reset and get ready for January's big push."},
+  {week:27,phase:'build',month_label:'January',tag:'Benchmark',start:'2026-12-14',end:'2026-12-20',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'Z',label:'SS 3x20min (1h45m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'FTP test to reset zones post-December. Sweet spot 3x20min.'},
+  {week:28,phase:'build',month_label:'January',tag:'Milestone',start:'2026-12-21',end:'2026-12-27',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 75mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Stone Mountain 75mi. First proper long day of the new year.'},
+  {week:29,phase:'build',month_label:'January',tag:'Milestone',start:'2026-12-28',end:'2027-01-03',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 80mi'},{type:'R',label:'Stone Mtn 50mi'}],note:'Big back-to-back: 80mi Sat + 50mi Sun. First 100km+ day.'},
+  {week:30,phase:'build',month_label:'January',tag:'Benchmark',start:'2027-01-04',end:'2027-01-10',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 210W / sub-75 min.'},
+  {week:31,phase:'build',month_label:'February',tag:'Training',start:'2027-01-11',end:'2027-01-17',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'VO2 5x4min (45m)'},{type:'Z',label:'VO2 4x5min (45m)'},{type:'Z',label:'VO2 3x6min (45m)'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'Z',label:'Easy spin (30m)'}],note:'VO2max block: 3 hard sessions mid-week on Zwift.'},
+  {week:32,phase:'build',month_label:'February',tag:'Milestone',start:'2027-01-18',end:'2027-01-24',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 85mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Stone Mountain 85mi. Nutrition every loop — no exceptions.'},
+  {week:33,phase:'build',month_label:'February',tag:'Milestone',start:'2027-01-25',end:'2027-01-31',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 85mi'},{type:'R',label:'Stone Mtn 50mi'}],note:'Back-to-back: 85mi Sat + 50mi Sun.'},
+  {week:34,phase:'build',month_label:'February',tag:'Benchmark',start:'2027-02-01',end:'2027-02-07',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 220W / sub-70 min.'},
+  {week:35,phase:'peak',month_label:'March',tag:'Milestone',start:'2027-02-08',end:'2027-02-14',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Threshold 4x10min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn CENTURY 95–100mi'},{type:'Z',label:'Easy spin (30m)'}],note:'First century — 95–100mi at Stone Mountain. 6am start, car as feed station. Massive confidence milestone.'},
+  {week:36,phase:'peak',month_label:'March',tag:'Milestone',start:'2027-02-15',end:'2027-02-21',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Threshold 4x10min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 30mi'},{type:'R',label:'Stone Mtn 75mi'},{type:'R',label:'Stone Mtn 40mi'}],note:'3-day block: Fri 30mi + Sat 75mi + Sun 40mi.'},
+  {week:37,phase:'peak',month_label:'March',tag:'Training',start:'2027-02-22',end:'2027-02-28',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Threshold 4x10min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 85mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Zwift threshold + Stone Mountain 85mi. Eat every loop.'},
+  {week:38,phase:'peak',month_label:'March',tag:'Benchmark',start:'2027-03-01',end:'2027-03-07',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 230W / sub-65 min.'},
+  {week:39,phase:'peak',month_label:'April',tag:'Milestone',start:'2027-03-08',end:'2027-03-14',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Threshold 3x12min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 95mi'},{type:'R',label:'Stone Mtn 60mi'}],note:'Stone Mountain 95mi Sat + 60mi Sun. Full NC500 back-to-back simulation.'},
+  {week:40,phase:'peak',month_label:'April',tag:'Event',start:'2027-03-15',end:'2027-03-21',benchmark:false,days:[{type:'R',label:'Travel to Dahlonega'},{type:'R',label:'Day1: 55mi/5000ft'},{type:'R',label:'Day2: 50mi/4500ft'},{type:'R',label:'Day3: 45mi/4000ft'},{type:'R',label:'Day4: 40mi easy'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'North Georgia 4-day tour — Three Gap route, Dahlonega/Suches. The most important training block of the year. Decide NC500 day count after this trip.'},
+  {week:41,phase:'peak',month_label:'April',tag:'Recovery',start:'2027-03-22',end:'2027-03-28',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Full recovery post-tour. Easy Zwift only — legs need this more than another hard session.'},
+  {week:42,phase:'peak',month_label:'April',tag:'Milestone',start:'2027-03-29',end:'2027-04-04',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'Z',label:'Easy 45m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 80mi'},{type:'Z',label:'Easy spin (30m)'}],note:'One more Stone Mountain 80mi. Assess legs post-tour before the taper begins.'},
+  {week:43,phase:'peak',month_label:'May',tag:'Taper',start:'2027-04-05',end:'2027-04-11',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 45m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 50mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Taper starts. Cut volume 30%. Keep one Zwift sweet spot session.'},
+  {week:44,phase:'peak',month_label:'May',tag:'Taper',start:'2027-04-12',end:'2027-04-18',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 30m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 25–30mi'},{type:'X',label:'Rest'}],note:'Cut volume 50%. Stone Mountain 25–30mi. Legs feel electric.'},
+  {week:45,phase:'peak',month_label:'May',tag:'Benchmark',start:'2027-04-19',end:'2027-04-25',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'Final FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Final Alpe du Zwift (1h)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Final FTP test + final Alpe — last data point before Scotland. Target: 230W+ / sub-65 min. Sort logistics.'},
+  {week:46,phase:'peak',month_label:'May',tag:'Taper',start:'2027-04-26',end:'2027-05-02',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 20m'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 20m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Very easy. Short rides only. Eat well, sleep well, get excited.'},
+];
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let currentPhase = 'base';
+
+const FTP_BY_MONTH = {
+  June:170, July:175, August:185, September:190, October:195,
+  November:205, December:205, January:210, February:220,
+  March:230, April:230, May:230
+};
+
+const ZONES = [
+  {key:'Z1', name:'Recovery', lo:0,   hi:55},
+  {key:'Z2', name:'Endurance', lo:56,  hi:75},
+  {key:'Z3', name:'Tempo',     lo:76,  hi:90},
+  {key:'Z4', name:'Threshold', lo:91,  hi:105},
+  {key:'Z5', name:'VO2max',    lo:106, hi:120},
+  {key:'Z6', name:'Anaerobic', lo:121, hi:150}
+];
+
+function zoneForPct(pct){ return ZONES.find(z=>pct>=z.lo && pct<=z.hi) || ZONES[1]; }
+
+function explainIntervals(label){
+  const m = label.match(/(\d+)\s*x\s*(\d+)\s*min/i);
+  if(!m) return null;
+  const reps = m[1], mins = m[2];
+  return `${reps}×${mins}min = ${reps} repeats of ${mins} minutes each at the target zone, with easy spinning between each rep.`;
+}
+
+function workoutDetail(label){
+  const l = label.toLowerCase();
+  const intervalNote = explainIntervals(label);
+  if(/vo2/.test(l) && /(sweet spot|ss|combo)/.test(l)){
+    return {pctLo:88, pctHi:115, workout:'BMU Week 9 combo — ~40min continuous sweet spot w/ 1-min VO2 surges @ 115% FTP', primary:'SS+VO2', intervalNote};
+  }
+  if(/vo2/.test(l)){
+    return {pctLo:106, pctHi:120, workout:'VO2max intervals — hard efforts with full recovery between', primary:'VO2', intervalNote};
+  }
+  if(/sweet spot|\bss\b/.test(l)){
+    return {pctLo:88, pctHi:94, workout:'Devedeset — 3x10min @ 90% FTP (rotate: Halvfems 3x12min @ 90%, or Ham Sandwich sweet spot over/unders)', primary:'SS', intervalNote};
+  }
+  if(/threshold/.test(l)){
+    return {pctLo:95, pctHi:105, workout:'Uphill Battle — extended time at FTP', primary:'Threshold', intervalNote};
+  }
+  if(/\bz3\b/.test(l)){
+    return {pctLo:76, pctHi:90, workout:'Tempo ride — steady Z3 effort', primary:'Z3', intervalNote};
+  }
+  if(/alpe|ftp (ramp )?test/.test(l)){ return null; }
+  if(/\bz2\b|stone mtn|three gap|century/.test(l)){
+    return {pctLo:56, pctHi:75, workout:'Steady endurance pace — conversational effort, sustainable for hours', primary:'Z2', intervalNote};
+  }
+  if(/easy|recovery/.test(l)){
+    return {pctLo:0, pctHi:55, workout:'Easy spin — very light effort, legs moving, no strain', primary:'Z1', intervalNote};
+  }
+  return null;
+}
+
+function fmtDateRange(start,end){
+  const s = new Date(start+'T00:00:00');
+  const e = new Date(end+'T00:00:00');
+  const opts = {month:'short',day:'numeric'};
+  return s.toLocaleDateString('en-US',opts)+' – '+e.toLocaleDateString('en-US',opts)+', '+s.getFullYear();
+}
+
+function showPhase(id,el){
+  currentPhase = id;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  populateMonthFilter();
+  renderWeeks();
+}
+
+function populateMonthFilter(){
+  const months = [...new Set(WEEKS.filter(w=>w.phase===currentPhase).map(w=>w.month_label))];
+  const sel = document.getElementById('month-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All months in phase</option>' + months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+  if(![...sel.options].some(o=>o.value===cur)) sel.value='';
+}
+
+function renderWeeks(){
+  const monthF = document.getElementById('month-filter').value;
+  let weeks = WEEKS.filter(w=>w.phase===currentPhase);
+  if(monthF) weeks = weeks.filter(w=>w.month_label===monthF);
+  if(weeks.length){ document.getElementById('phase-range-label').textContent = fmtDateRange(weeks[0].start, weeks[weeks.length-1].end); }
+  let html = '';
+  weeks.forEach(w=>{
+    const ftp = FTP_BY_MONTH[w.month_label] || 170;
+    const today = new Date();
+    const wStart = new Date(w.start + 'T00:00:00');
+    const wEnd = new Date(w.end + 'T23:59:59');
+    const isCurrent = today >= wStart && today <= wEnd;
+    html += `<div class="week-card${w.benchmark?' benchmark':''}${isCurrent?' current-week':''}">
+      <div class="week-hdr">
+        <div><span class="week-num">WEEK ${w.week}</span> <span class="week-tag week-tag-${w.tag}">${w.tag}</span>${isCurrent?'<span class="current-week-badge">▶ This week</span>':''}</div>
+      </div>
+      <div class="week-title">${w.month_label} — ${weekHeadline(w)}</div>
+      <div class="week-dates">${fmtDateRange(w.start,w.end)}</div>
+      <div class="day-grid">
+        ${w.days.map((d,i)=>{
+          const cellId = `cell-${w.week}-${i}`;
+          const detail = d.type!=='X' ? workoutDetail(d.label) : null;
+          const expandable = !!detail;
+          const dataAttr = expandable ? `data-ftp="${ftp}" data-pctlo="${detail.pctLo}" data-pcthi="${detail.pctHi}" data-workout="${escapeAttr(detail.workout)}" data-interval="${escapeAttr(detail.intervalNote||'')}"` : '';
+          return `<div class="day-col">
+            <div class="day-name">${DAY_NAMES[i]}</div>
+            <div class="day-cell type-${d.type}${expandable?' expandable':''}" id="${cellId}" ${dataAttr} ${expandable?`onclick="toggleDay('${cellId}')"`:''}>${d.label}${expandable?'<span class="expand-hint">▾</span>':''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="week-note">${w.note}</div>
+    </div>`;
+  });
+  document.getElementById('weeks-container').innerHTML = html || '<div class="empty">No weeks in this filter.</div>';
+}
+
+function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toggleDay(cellId){
+  const cell = document.getElementById(cellId);
+  if(!cell) return;
+  const grid = cell.closest('.day-grid');
+  const existing = grid.querySelector('.day-expand');
+  const wasOpenForThisCell = cell.classList.contains('open');
+  if(existing) existing.remove();
+  grid.querySelectorAll('.day-cell.open').forEach(e=>e.classList.remove('open'));
+  if(wasOpenForThisCell) return;
+  cell.classList.add('open');
+  const ftp = parseFloat(cell.dataset.ftp);
+  const pctLo = parseFloat(cell.dataset.pctlo);
+  const pctHi = parseFloat(cell.dataset.pcthi);
+  const workout = cell.dataset.workout;
+  const intervalNote = cell.dataset.interval;
+  const wLo = Math.round(ftp*pctLo/100);
+  const wHi = Math.round(ftp*pctHi/100);
+  const zoneLo = zoneForPct(pctLo);
+  const zoneHi = zoneForPct(pctHi);
+  const zoneLabel = zoneLo.key===zoneHi.key ? `${zoneLo.key} ${zoneLo.name}` : `${zoneLo.key}–${zoneHi.key} (${zoneLo.name}–${zoneHi.name})`;
+  const expand = document.createElement('div');
+  expand.className = 'day-expand';
+  expand.innerHTML = `<div class="day-expand-arrow" id="day-expand-arrow"></div>
+    <div class="day-expand-zone">${zoneLabel} · ${pctLo}–${pctHi}% FTP · ${wLo}–${wHi}W</div>
+    <div class="day-expand-workout">${workout}</div>
+    ${intervalNote?`<div class="day-expand-interval">${intervalNote}</div>`:''}`;
+  grid.appendChild(expand);
+  requestAnimationFrame(()=>{
+    const arrow = document.getElementById('day-expand-arrow');
+    if(!arrow) return;
+    const gridRect = grid.getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+    const center = cellRect.left + cellRect.width/2 - gridRect.left;
+    arrow.style.left = center + 'px';
+  });
+}
+
+function weekHeadline(w){
+  if(w.tag === 'Benchmark') return 'Benchmark week';
+  if(w.tag === 'Holiday') return 'Holiday';
+  if(w.tag === 'Recovery') return 'Recovery week';
+  if(w.tag === 'Taper') return 'Taper week';
+  if(w.tag === 'Event') return 'Event week';
+  const hi = w.days.find(d=>d.type!=='X');
+  if(!hi) return w.tag;
+  const label = hi.label;
+  // Return a clean version: strip interval notation like 2x20min, (1h15m) etc
+  // but keep meaningful words like SS, Z2, VO2, Threshold, Stone Mtn, Alpe etc
+  if(/alpe/i.test(label)) return 'Alpe du Zwift';
+  if(/stone mtn|stone mountain/i.test(label)) return 'Stone Mountain';
+  if(/three gap/i.test(label)) return 'Three Gap';
+  if(/vo2/i.test(label)) return 'VO2 intervals';
+  if(/sweet spot|ss/i.test(label)) return 'Sweet spot';
+  if(/threshold/i.test(label)) return 'Threshold';
+  if(/z2|endurance/i.test(label)) return 'Endurance';
+  if(/z3|tempo/i.test(label)) return 'Tempo';
+  if(/easy|recovery/i.test(label)) return 'Easy riding';
+  return w.tag;
+}
+
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tnav-item').forEach(t=>t.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  el.classList.add('on');
+  if(id==='tracker'){ initGsSetup(); renderHistory(); renderMiniSummary(); calcWkg(); }
+  if(id==='home'){ renderHome(); }
+}
+
+/* ============ RIDE TRACKER ============ */
+function today(){ return new Date().toISOString().slice(0,10); }
+function fmtRideDate(ds){
+  if(!ds) return '—';
+  // Handle both YYYY-MM-DD and full date strings
+  let d;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(ds)){
+    d = new Date(ds + 'T00:00:00');
+  } else {
+    // Try to parse full date string and extract YYYY-MM-DD
+    const parsed = new Date(ds);
+    if(!isNaN(parsed)){
+      const y = parsed.getFullYear();
+      const m = String(parsed.getMonth()+1).padStart(2,'0');
+      const day = String(parsed.getDate()).padStart(2,'0');
+      d = new Date(`${y}-${m}-${day}T00:00:00`);
+    } else return ds;
+  }
+  return d.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function cleanDate(ds){
+  if(!ds) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(ds)) return ds;
+  // Extract date from full JS date string like "Thu Jun 25 2026 00:00:00 GMT-0400..."
+  // Use regex to avoid timezone shifting issues with new Date()
+  const m1 = ds.match(/(\w+)\s+(\w+)\s+(\d+)\s+(\d{4})/);
+  if(m1){
+    const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+    const mo = months[m1[2]];
+    if(mo) return `${m1[4]}-${mo}-${String(m1[3]).padStart(2,'0')}`;
+  }
+  const parsed = new Date(ds);
+  if(!isNaN(parsed)){
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth()+1).padStart(2,'0');
+    const day = String(parsed.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  return ds;
+}
+function fmt(n,d=1){ return n==null||n===''?'—':parseFloat(n).toFixed(d); }
+function fmtInt(n){ return n==null||n===''?'—':Math.round(n); }
+function fmtTime(h){ if(!h||parseFloat(h)===0)return'—'; const total=Math.round(parseFloat(h)*3600);const hh=Math.floor(total/3600);const mm=Math.floor((total%3600)/60); return hh>0?`${hh}h ${String(mm).padStart(2,'0')}m`:`${mm}m`; }
+
+function calcWkg(){
+  const ftp=parseFloat(document.getElementById('wkg-ftp').value)||0;
+  const lbs=parseFloat(document.getElementById('wkg-lbs').value)||0;
+  const kg=lbs/2.20462; const wkg=kg>0?(ftp/kg):0;
+  document.getElementById('wkg-result').textContent=wkg.toFixed(2)+' W/kg';
+  const cats=[[4.6,'Cat 1'],[4.0,'Cat 2'],[3.4,'Cat 3'],[2.5,'Cat 4'],[-1,'Cat 5']];
+  const cat=cats.find(c=>wkg>=c[0]);
+  document.getElementById('wkg-cat').textContent=cat?cat[1]+' · '+ftp+'W / '+lbs+' lbs / '+kg.toFixed(1)+'kg':'';
+  const powers=[170,185,190,195,205,210,220,230];
+  document.getElementById('wkg-table').innerHTML=powers.map(p=>{ const w=kg>0?(p/kg):0; return`<div class="sum-cell"><div class="sum-label">${p}W</div><div class="sum-val">${w.toFixed(2)}</div></div>`; }).join('');
+}
+
+let editingId = null;
+
+async function saveRide(){
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  const d={
+    id: editingId||Date.now(),
+    date: cleanDate(document.getElementById('f-date').value||today()),
+    type: document.getElementById('f-type').value,
+    dist: document.getElementById('f-dist').value,
+    elev: document.getElementById('f-elev').value,
+    time: (()=>{ const h=parseFloat(document.getElementById('f-hrs').value)||0;const m=parseFloat(document.getElementById('f-min').value)||0;const s=parseFloat(document.getElementById('f-sec').value)||0;const t=h+m/60+s/3600;return t>0?t.toFixed(4):''; })(),
+    np: document.getElementById('f-np').value,
+    hr: document.getElementById('f-hr').value,
+    maxhr: document.getElementById('f-maxhr').value,
+    kj: document.getElementById('f-kj').value,
+    weight: document.getElementById('f-weight').value,
+    ftp: document.getElementById('f-ftp').value,
+    vo2: document.getElementById('f-vo2').value,
+    load: document.getElementById('f-load').value,
+    hrv: document.getElementById('f-hrv').value,
+    recovery: document.getElementById('f-recovery').value,
+    tstatus: document.getElementById('f-tstatus').value,
+    carbs: _foodCarbs.toString(),
+    bottles_hydro: _bottlesHydro.toString(),
+    bottles_beta: _bottlesBeta.toString(),
+    route: document.getElementById('f-route').value,
+    notes: document.getElementById('f-notes').value
+  };
+  if(!d.dist&&!d.time){ document.getElementById('log-status').textContent='Add at least distance or time.'; btn.disabled=false; return; }
+  const rides = await loadRides();
+  _ridesCache = null; // invalidate cache so we re-fetch fresh after save
+  if(editingId){
+    const idx=rides.findIndex(r=>String(r.id)===String(editingId));
+    if(idx>-1) rides[idx]=d; else rides.push(d);
+  } else {
+    rides.push(d);
+  }
+  rides.sort((a,b)=>cleanDate(b.date).localeCompare(cleanDate(a.date)));
+  await saveRides(rides);
+  document.getElementById('log-status').textContent=editingId?'Ride updated!':'Ride saved!';
+  setTimeout(()=>document.getElementById('log-status').textContent='',3000);
+  btn.disabled = false;
+  cancelEdit();
+  renderHistory(); renderMiniSummary(); renderHome();
+}
+
+function clearForm(){
+  ['f-dist','f-elev','f-hrs','f-min','f-sec','f-np','f-hr','f-maxhr','f-kj','f-vo2','f-load','f-hrv','f-recovery','f-route','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-tstatus').value='';
+  clearFood();
+  document.getElementById('f-date').value=today();
+  document.getElementById('f-weight').value='167.6';
+  document.getElementById('f-ftp').value='170';
+}
+
+async function editRide(id){
+  const rides=await loadRides();
+  const r=rides.find(x=>String(x.id)===String(id));
+  if(!r) return;
+  editingId=id;
+  document.getElementById('f-date').value=cleanDate(r.date)||'';
+  document.getElementById('f-type').value=r.type||'Z';
+  document.getElementById('f-dist').value=r.dist||'';
+  document.getElementById('f-elev').value=r.elev||'';
+  const totalH=parseFloat(r.time)||0;
+  const totalSec=Math.round(totalH*3600);
+  document.getElementById('f-hrs').value=totalSec>0?Math.floor(totalSec/3600):'';
+  document.getElementById('f-min').value=totalSec>0?Math.floor((totalSec%3600)/60):'';
+  document.getElementById('f-sec').value=totalSec>0?totalSec%60:'';
+  document.getElementById('f-np').value=r.np||'';
+  document.getElementById('f-hr').value=r.hr||'';
+  document.getElementById('f-maxhr').value=r.maxhr||'';
+  document.getElementById('f-kj').value=r.kj||'';
+  document.getElementById('f-weight').value=r.weight||'167.6';
+  document.getElementById('f-ftp').value=r.ftp||'170';
+  document.getElementById('f-vo2').value=r.vo2||'';
+  document.getElementById('f-load').value=r.load||'';
+  document.getElementById('f-route').value=r.route||'';
+  document.getElementById('f-notes').value=r.notes||'';
+  document.getElementById('f-hrv').value=r.hrv||'';
+  document.getElementById('f-recovery').value=r.recovery||'';
+  document.getElementById('f-tstatus').value=r.tstatus||'';
+  // restore food if editing
+  clearFood();
+  if(r.carbs) { _foodCarbs=parseInt(r.carbs)||0; updateFoodSummary(); }
+  document.getElementById('form-title').textContent='Edit ride';
+  document.getElementById('save-btn').textContent='Update ride';
+  document.getElementById('cancel-edit-btn').style.display='inline-block';
+  const trackerTab=[...document.querySelectorAll('.tnav-item')].find(t=>t.textContent.trim()==='Ride tracker');
+  if(trackerTab) showSection('tracker', trackerTab);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('form-title').textContent='Log a ride';
+  document.getElementById('save-btn').textContent='Save ride';
+  document.getElementById('cancel-edit-btn').style.display='none';
+  clearForm();
+}
+
+async function refreshFromSheets(){
+  _ridesCache = null;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  setSyncStatus('syncing','Refreshing…');
+  await renderHistory();
+  await renderMiniSummary();
+}
+
+function wkgFromRide(r){ if(!r.np||!r.weight) return null; const kg=parseFloat(r.weight)/2.20462; return kg>0?(parseFloat(r.np)/kg):null; }
+function monthLabel(ds){
+  const clean = cleanDate(ds);
+  if(!clean) return '';
+  const[y,m]=clean.split('-');
+  return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y;
+}
+
+async function deleteRide(id){
+  const rides=await loadRides();
+  _ridesCache=null;
+  await saveRides(rides.filter(r=>String(r.id)!==String(id)));
+  if(String(editingId)===String(id)) cancelEdit();
+  renderHistory(); renderMiniSummary(); renderHome();
+}
+
+async function renderHistory(){
+  const rides=await loadRides();
+  const typeF=document.getElementById('filter-type').value;
+  const monthF=document.getElementById('filter-month').value;
+  const months=[...new Set(rides.map(r=>r.date.slice(0,7)))].sort().reverse();
+  const sel=document.getElementById('filter-month');const cur=sel.value;
+  sel.innerHTML='<option value="">All months</option>'+months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${monthLabel(m+'-01')}</option>`).join('');
+  let filtered=rides;
+  if(typeF) filtered=filtered.filter(r=>r.type===typeF);
+  if(monthF) filtered=filtered.filter(r=>r.date.startsWith(monthF));
+  if(!filtered.length){ document.getElementById('history-list').innerHTML='<div class="empty">No rides yet.</div>'; return; }
+  let html='',lastMonth='';
+  filtered.forEach(r=>{
+    const m=cleanDate(r.date).slice(0,7);
+    if(m&&m!==lastMonth){ html+=`<div class="month-hdr">${monthLabel(m+'-01')}</div>`; lastMonth=m; }
+    const wkg=wkgFromRide(r);
+    html+=`<div class="ride-row"><div style="min-width:70px"><div class="ride-date">${fmtRideDate(r.date)}</div><span class="tag tag-${r.type}">${r.type}</span></div><div style="flex:1"><div class="ride-meta">${r.dist?`<span class="ride-main">${fmt(r.dist,1)} mi</span>`:''} ${r.elev?`<span class="tag">↑${fmtInt(r.elev)}ft</span>`:''} ${r.time?`<span class="tag">${fmtTime(r.time)}</span>`:''} ${r.np?`<span class="tag">${fmtInt(r.np)}W</span>`:''} ${wkg?`<span class="tag">${wkg.toFixed(2)} W/kg</span>`:''} ${r.hr?`<span class="tag">${fmtInt(r.hr)} bpm</span>`:''} ${r.kj?`<span class="tag">${fmtInt(r.kj)} kJ</span>`:''} ${r.ftp?`<span class="tag">FTP ${fmtInt(r.ftp)}W</span>`:''} ${r.load?`<span class="tag">Load ${fmtInt(r.load)}</span>`:''}</div>${r.route?`<div style="font-size:12px;color:var(--text2);margin-top:3px">${r.route}</div>`:''} ${r.notes?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${r.notes}</div>`:''}<div style="margin-top:5px;display:flex;gap:6px"><button class="btn" style="font-size:11px;padding:3px 10px" onclick="editRide(${r.id})">Edit</button><button class="btn btn-danger" style="font-size:11px;padding:3px 10px" onclick="deleteRide(${r.id})">Delete</button></div></div></div>`;
+  });
+  document.getElementById('history-list').innerHTML=html;
+}
+
+async function renderMiniSummary(){
+  const rides=await loadRides();
+  if(!rides.length){ document.getElementById('mini-summary').innerHTML='<div class="empty">No rides logged yet.</div>'; return; }
+  const byMonth={};
+  rides.forEach(r=>{ const m=cleanDate(r.date).slice(0,7); if(!m) return; if(!byMonth[m]) byMonth[m]=[]; byMonth[m].push(r); });
+  let html='';
+  Object.keys(byMonth).sort().reverse().slice(0,4).forEach(m=>{
+    const rs=byMonth[m];
+    const totalDist=rs.reduce((s,r)=>s+(parseFloat(r.dist)||0),0);
+    const totalTime=rs.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
+    const totalElev=rs.reduce((s,r)=>s+(parseFloat(r.elev)||0),0);
+    const totalLoad=rs.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+    const typeCounts={Z:0,R:0,M:0}; rs.forEach(r=>{ if(typeCounts[r.type]!==undefined) typeCounts[r.type]++; });
+    html+=`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:13px;font-weight:600">${monthLabel(m+'-01')}</div><div style="display:flex;gap:4px">${Object.entries(typeCounts).filter(([,v])=>v>0).map(([k,v])=>`<span class="tag tag-${k}">${v}×${k}</span>`).join('')}</div></div><div class="sum-grid"><div class="sum-cell"><div class="sum-label">Rides</div><div class="sum-val">${rs.length}</div></div><div class="sum-cell"><div class="sum-label">Distance</div><div class="sum-val">${totalDist.toFixed(0)} mi</div></div><div class="sum-cell"><div class="sum-label">Elevation</div><div class="sum-val">${Math.round(totalElev).toLocaleString()}ft</div></div><div class="sum-cell"><div class="sum-label">Time</div><div class="sum-val">${fmtTime(totalTime)}</div></div>${totalLoad?`<div class="sum-cell"><div class="sum-label">Load</div><div class="sum-val">${Math.round(totalLoad)}</div></div>`:''}</div></div>`;
+  });
+  document.getElementById('mini-summary').innerHTML=html;
+}
+
+/* ============ DAILY QUOTE ============ */
+const QUOTES = [
+  {text:"It never gets easier, you just go faster.", author:"Greg LeMond"},
+  {text:"Pain is temporary. Quitting lasts forever.", author:"Lance Armstrong"},
+  {text:"The race is won by the rider who can suffer the most.", author:"Eddy Merckx"},
+  {text:"Ride lots.", author:"Eddy Merckx"},
+  {text:"It's not about the bike.", author:"Lance Armstrong"},
+  {text:"Suffering is temporary, quitting is forever.", author:"Lance Armstrong"},
+  {text:"Strength does not come from winning. Your struggles develop your strengths.", author:"Arnold Schwarzenegger"},
+  {text:"The body achieves what the mind believes.", author:"Unknown"},
+  {text:"Discipline is choosing between what you want now and what you want most.", author:"Abraham Lincoln"},
+  {text:"You don't have to be great to start, but you have to start to be great.", author:"Zig Ziglar"},
+  {text:"The only bad workout is the one that didn't happen.", author:"Unknown"},
+  {text:"Champions keep playing until they get it right.", author:"Billie Jean King"},
+  {text:"It's not the mountain we conquer, but ourselves.", author:"Edmund Hillary"},
+  {text:"The miracle isn't that I finished. The miracle is that I had the courage to start.", author:"John Bingham"},
+  {text:"Whether you think you can or you think you can't, you're right.", author:"Henry Ford"},
+  {text:"Fatigue makes cowards of us all.", author:"Vince Lombardi"},
+  {text:"Out of difficulties grow miracles.", author:"Jean de La Bruyère"},
+  {text:"The pain you feel today will be the strength you feel tomorrow.", author:"Unknown"},
+  {text:"A river cuts through rock not because of its power, but its persistence.", author:"Jim Watkins"},
+  {text:"Success is the sum of small efforts repeated day in and day out.", author:"Robert Collier"},
+  {text:"You are never too old to set another goal or to dream a new dream.", author:"C.S. Lewis"},
+  {text:"What seems impossible today will one day become your warm-up.", author:"Unknown"},
+  {text:"Don't watch the clock; do what it does. Keep going.", author:"Sam Levenson"},
+  {text:"Hills are speedwork in disguise.", author:"Frank Shorter"},
+  {text:"The hardest part is getting out the door. Everything after that is easy.", author:"Unknown"},
+  {text:"Motivation gets you started. Habit keeps you going.", author:"Jim Ryun"},
+  {text:"Legs hurt now, but you'll never have to say 'I wish I had tried harder'.", author:"Unknown"},
+  {text:"Train hard, win easy.", author:"Unknown"},
+  {text:"The best preparation for tomorrow is doing your best today.", author:"H. Jackson Brown Jr."},
+  {text:"Comfort is the enemy of progress.", author:"P.T. Barnum"},
+  {text:"Either you run the day, or the day runs you.", author:"Jim Rohn"},
+  {text:"You have to forget your last marginal gain to chase the next.", author:"Chris Froome (paraphrased)"},
+  {text:"Cycling is suffering.", author:"Fausto Coppi"},
+  {text:"The bike doesn't know how old you are.", author:"Unknown"},
+  {text:"Climbing is a state of mind. Always be positive.", author:"Marco Pantani"},
+  {text:"Set your goals high, and don't stop till you get there.", author:"Bo Jackson"},
+  {text:"There is no testing without trying.", author:"Unknown"},
+  {text:"The summit is what drives us, but the climb itself is what matters.", author:"Conrad Anker"},
+  {text:"One more pedal stroke than yesterday.", author:"Unknown"},
+  {text:"Strength grows in the moments when you think you can't go on but you keep going anyway.", author:"Unknown"}
+];
+
+function dayOfYear(d){ const start=new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
+function renderDailyQuote(){ const el=document.getElementById('quote-bar'); if(!el)return; const today=new Date(); const idx=dayOfYear(today)%QUOTES.length; const q=QUOTES[idx]; el.innerHTML=`"${q.text}"<span class="quote-author">— ${q.author}</span>`; }
+
+/* ============ SETTINGS ============ */
+const SETTINGS_KEY = 'nc500-settings-v1';
+let _settings = null;
+
+function loadSettings(){
+  if(_settings) return _settings;
+  try{ const s = localStorage.getItem(SETTINGS_KEY); _settings = s ? JSON.parse(s) : {}; }
+  catch(e){ _settings = {}; }
+  return _settings;
+}
+
+function saveSettings(s){
+  _settings = s;
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }catch(e){}
+}
+
+function saveSettingsFromForm(){
+  const s = loadSettings();
+  const ftp = parseInt(document.getElementById('s-ftp').value);
+  const weight = parseFloat(document.getElementById('s-weight').value);
+  const hrv = parseInt(document.getElementById('s-hrv').value);
+  if(ftp > 0) s.ftp = ftp;
+  if(weight > 0) s.weight = weight;
+  if(hrv > 0) s.hrv_baseline = hrv;
+  saveSettings(s);
+  renderHome();
+}
+
+/* ============ HOME TAB ============ */
+const NC500_DATE = '2027-06-15'; // approximate — update when confirmed
+const HRV_BASELINE = 59;
+
+async function renderHome(){
+  const el = document.getElementById('home-content');
+  if(!el) return;
+  const today_d = new Date();
+  const todayStr = today_d.toISOString().slice(0,10);
+  const nc500 = new Date(NC500_DATE + 'T00:00:00');
+  const daysToEvent = Math.ceil((nc500 - today_d) / 86400000);
+
+  // Find current week
+  const currentWeek = WEEKS.find(w => todayStr >= w.start && todayStr <= w.end);
+  const dayOfWeek = today_d.getDay(); // 0=Sun
+  const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon=0
+
+  // Find next benchmark week
+  const nextBenchmark = WEEKS.find(w => w.benchmark && w.start > todayStr);
+
+  // Build zone table at current FTP
+  const s = loadSettings();
+  const rides = _ridesCache && _ridesCache.length > 0 ? _ridesCache : await loadRides();
+  const lastRide = rides[0];
+  const currentFTP = s.ftp || (lastRide && lastRide.ftp ? parseInt(lastRide.ftp) : 170);
+  const currentWeight = s.weight || (lastRide && lastRide.weight ? parseFloat(lastRide.weight) : 167.6);
+  const HRV_BASE = s.hrv_baseline || 59;
+  const currentWkg = currentWeight > 0 ? (currentFTP / (currentWeight / 2.20462)) : 0;
+
+  const zones = [
+    {name:'Z1 Recovery',      lo:0,                              hi:Math.round(currentFTP*0.55),  color:'var(--bg)',         textColor:'var(--text3)'},
+    {name:'Z2 Endurance',     lo:Math.round(currentFTP*0.56),    hi:Math.round(currentFTP*0.75),  color:'var(--green-bg)',   textColor:'var(--green-text)'},
+    {name:'Z3 Tempo',         lo:Math.round(currentFTP*0.76),    hi:Math.round(currentFTP*0.90),  color:'var(--blue-bg)',    textColor:'var(--blue-text)'},
+    {name:'Z4 Threshold',     lo:Math.round(currentFTP*0.91),    hi:Math.round(currentFTP*1.05),  color:'var(--amber-bg)',   textColor:'var(--amber-text)'},
+    {name:'Z5 VO2max',        lo:Math.round(currentFTP*1.06),    hi:Math.round(currentFTP*1.20),  color:'var(--red-bg)',     textColor:'var(--red-text)'},
+    {name:'Z6 Anaerobic',     lo:Math.round(currentFTP*1.21),    hi:Math.round(currentFTP*1.50),  color:'var(--purple-bg)',  textColor:'var(--purple-text)'},
+    {name:'Z7 Neuromuscular', lo:Math.round(currentFTP*1.51),    hi:null,                         color:'#1a0a0a',           textColor:'#ff6b6b'},
+  ];
+
+  // Recent rides (last 3)
+  const recentRides = rides.slice(0,3);
+
+  // This week stats
+  const weekRides = currentWeek ? rides.filter(r => cleanDate(r.date) >= currentWeek.start && cleanDate(r.date) <= currentWeek.end) : [];
+  const weekMiles = weekRides.reduce((s,r) => s+(parseFloat(r.dist)||0), 0);
+  const weekLoad = weekRides.reduce((s,r) => s+(parseFloat(r.load)||0), 0);
+  const weekHrs = weekRides.reduce((s,r) => s+(parseFloat(r.time)||0), 0);
+  const plannedRides = currentWeek ? currentWeek.days.filter(d => d.type !== 'X').length : 0;
+
+  // Last week stats for comparison
+  const prevWeek = currentWeek ? WEEKS[WEEKS.findIndex(w=>w.week===currentWeek.week)-1] : null;
+  const prevRides = prevWeek ? rides.filter(r => cleanDate(r.date) >= prevWeek.start && cleanDate(r.date) <= prevWeek.end) : [];
+  const prevMiles = prevRides.reduce((s,r) => s+(parseFloat(r.dist)||0), 0);
+
+  // HRV from last ride
+  const lastHRV = rides.find(r => r.hrv);
+  const hrvVal = lastHRV ? parseInt(lastHRV.hrv) : null;
+  const hrvDiff = hrvVal ? hrvVal - HRV_BASELINE : null;
+  const hrvStatus = !hrvVal ? 'no data' : hrvDiff >= -4 ? 'good' : hrvDiff >= -10 ? 'caution' : 'low';
+
+  // Next benchmark date
+  const benchDate = nextBenchmark ? new Date(nextBenchmark.start + 'T00:00:00') : null;
+  const daysToBench = benchDate ? Math.ceil((benchDate - today_d) / 86400000) : null;
+
+  // Days header
+  const DAY_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const greet = today_d.getHours() < 12 ? 'Good morning' : today_d.getHours() < 17 ? 'Good afternoon' : 'Good evening';
+
+  let html = `<div class="home-wrap">
+  <div class="home-hdr">
+    <div>
+      <div style="font-size:18px;font-weight:700">${greet}, Chris</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px">${today_d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'})}${currentWeek ? ' · Week ' + currentWeek.week + ' of 46' : ''}</div>
+    </div>
+    <div class="countdown-tile">
+      <div class="countdown-num">${daysToEvent}</div>
+      <div class="countdown-label">days to NC500</div>
+      <div class="countdown-sub">~15 Jun 2027</div>
+    </div>
+  </div>`;
+
+  // This week card
+  if(currentWeek){
+    html += `<div class="this-week-card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:600">This week <span class="badge badge-base" style="margin-left:6px;background:var(--green-bg);color:var(--green-text)">▶ Week ${currentWeek.week}</span></div>
+      <div style="font-size:12px;color:var(--text3)">${fmtDateRange(currentWeek.start, currentWeek.end)}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px">`;
+    currentWeek.days.forEach((d,i) => {
+      const isToday = i === dayIndex;
+      const cellClass = isToday ? 'hw-today' : 'hw-' + d.type;
+      html += `<div>
+        <div class="hw-day-name${isToday?' today':''}">${DAY_NAMES_SHORT[i]}</div>
+        <div class="hw-day-cell ${cellClass}">${d.label}</div>
+      </div>`;
+    });
+    html += `</div>
+    <div style="font-size:12px;color:var(--text2)">${currentWeek.note}</div>
+  </div>`;
+  }
+
+  // Fitness + this week tiles
+  const prevLoad = prevRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+  const prevHrs = prevRides.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
+  const milesDelta = weekMiles - prevMiles;
+  const loadDelta = weekLoad - prevLoad;
+
+  // ROW 1: Readiness | Zones | Next benchmark
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">`;
+  // ---- Readiness tile ----
+  const lastRideWithData = rides.find(r => r.hrv || r.recovery || r.tstatus);
+  if(true){ // always show readiness — placeholder when no data
+  if(!lastRideWithData){
+    html += `<div class="hcard" style="flex:1 1 0;min-width:0">
+      <div class="hcard-label">Readiness</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px">No readiness data yet. Log HRV, recovery time, and training status on your next ride to see your signal here.</div>
+    </div>`;
+  } else {
+    const rHRV = lastRideWithData.hrv ? parseInt(lastRideWithData.hrv) : null;
+    const rRec = lastRideWithData.recovery ? parseInt(lastRideWithData.recovery) : null;
+    const rStatus = lastRideWithData.tstatus || null;
+    const hrvDiff2 = rHRV ? rHRV - HRV_BASE : null;
+    const hrvColor = !rHRV ? 'var(--text3)' : hrvDiff2 >= -4 ? 'var(--green-text)' : hrvDiff2 >= -10 ? 'var(--amber-text)' : 'var(--red-text)';
+    const recColor = !rRec ? 'var(--text3)' : rRec <= 24 ? 'var(--green-text)' : rRec <= 48 ? 'var(--amber-text)' : 'var(--red-text)';
+    const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : rStatus==='Maintaining' ? 'var(--amber-text)' : 'var(--red-text)';
+    const signals = [rHRV?hrvColor:null, rRec?recColor:null, rStatus?statusColor:null].filter(Boolean);
+    const overallRed = signals.filter(s=>s==='var(--red-text)').length;
+    const overallAmber = signals.filter(s=>s==='var(--amber-text)').length;
+    const overallColor = overallRed>0?'var(--red-text)':overallAmber>0?'var(--amber-text)':'var(--green-text)';
+    const overallText = overallRed>0?'Consider rest':'var(--red-text)'!==overallColor&&overallAmber>0?'Train with caution':'Good to train';
+
+    html += `<div class="hcard" style="flex:1 1 0;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div class="hcard-label">Readiness</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <div style="width:12px;height:12px;border-radius:50%;background:${overallColor};flex-shrink:0"></div>
+            <div style="font-size:17px;font-weight:700;color:${overallColor}">${overallText}</div>
+          </div>
+        </div>
+        ${rHRV?`<div style="background:var(--bg);border-radius:var(--radius);padding:8px 14px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:${hrvColor}">${rHRV}</div>
+          <div style="font-size:10px;color:var(--text3)">HRV ms</div>
+        </div>`:''}
+      </div>
+      ${rHRV?`<div class="traffic-row">
+        <div class="tdot" style="background:${hrvColor}"></div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">HRV</div>
+        <div style="font-size:11px;color:var(--text2)">${rHRV}ms · baseline ${HRV_BASE}ms · ${hrvDiff2>=0?'+':''}${hrvDiff2}ms</div></div>
+        <div style="font-size:13px;color:${hrvColor}">${hrvDiff2>=-4?'✓':hrvDiff2>=-10?'⚠':'✗'}</div>
+      </div>`:''}
+      ${rRec?`<div class="traffic-row">
+        <div class="tdot" style="background:${recColor}"></div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">Recovery time</div>
+        <div style="font-size:11px;color:var(--text2)">${rRec}hrs · ${rRec<=24?'cleared for training':rRec<=48?'light training only':'full rest recommended'}</div></div>
+        <div style="font-size:13px;color:${recColor}">${rRec<=24?'✓':rRec<=48?'⚠':'✗'}</div>
+      </div>`:''}
+      ${rStatus?`<div class="traffic-row">
+        <div class="tdot" style="background:${statusColor}"></div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">Training status</div>
+        <div style="font-size:11px;color:var(--text2)">${rStatus}</div></div>
+        <div style="font-size:13px;color:${statusColor}">${(rStatus==='Productive'||rStatus==='Peaking')?'✓':rStatus==='Maintaining'?'⚠':'✗'}</div>
+      </div>`:''}
+    </div>`;
+  }} // end readiness
+
+  // ---- Month + fuelling data ----
+  const monthStart = todayStr.slice(0,7)+'-01';
+  const monthRides = rides.filter(r=>cleanDate(r.date)>=monthStart&&cleanDate(r.date)<=todayStr);
+  const monthMiles = monthRides.reduce((s,r)=>s+(parseFloat(r.dist)||0),0);
+  const monthElev = monthRides.reduce((s,r)=>s+(parseFloat(r.elev)||0),0);
+  const lastFuelRide = rides.find(r=>r.carbs&&parseInt(r.carbs)>0);
+
+  html += `<div class="hcard">
+    <div class="hcard-label">Zones @ ${currentFTP}W</div>
+    ${zones.map(z => `<div class="zone-row">
+      <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;background:${z.color};color:${z.textColor}">${z.name.split(' ')[0]+' '+z.name.split(' ')[1]}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text)">${z.lo}${z.hi?'–'+z.hi+'W':'+W'}</span>
+    </div>`).join('')}
+  </div>`;
+  html += `<div class="hcard">
+    <div class="hcard-label">Next benchmark</div>
+    ${nextBenchmark ? `
+    <div class="hcard-val">${new Date(nextBenchmark.start+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+    <div class="hcard-sub">${daysToBench} days · Week ${nextBenchmark.week}</div>
+    <div style="border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px">
+      <div style="font-size:11px;color:var(--text3)">FTP ramp test + Alpe</div>
+    </div>` : '<div class="hcard-sub">No upcoming benchmark</div>'}
+    ${hrvVal ? `<div style="border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:3px">HRV (last ride)</div>
+      <div style="font-size:16px;font-weight:700;color:${hrvStatus==='good'?'var(--green-text)':hrvStatus==='caution'?'var(--amber-text)':'var(--red-text)'}">${hrvVal}ms</div>
+      <div style="font-size:11px;color:var(--text3)">${hrvDiff > 0 ? '↑' : '↓'} ${Math.abs(hrvDiff)} vs baseline · ${hrvStatus}</div>
+    </div>` : ''}
+  </div>
+</div>`;
+  html += `</div>`;
+
+  // ROW 2: W/kg (1/3) | Exercise load (2/3)
+  html += `<div style="display:grid;grid-template-columns:calc((100% - 24px) / 3) 1fr;gap:12px;margin-bottom:12px;align-items:stretch">`;
+  html += `<div class="hcard" style="min-width:0;overflow:hidden">
+    <div class="hcard-label">W/kg</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin:4px 0 8px">
+      <div class="hcard-val">${currentWkg.toFixed(2)}</div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text3)">Target</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green-text)">3.2+</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${currentFTP}W · ${currentWeight} lbs</div>
+    <svg width="100%" height="40" viewBox="0 0 100 40" preserveAspectRatio="none" style="display:block">
+      <line x1="0" y1="34" x2="100" y2="34" stroke="var(--border)" stroke-width="0.5"/>
+      <polyline points="0,30 100,4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,2"/>
+      <polyline points="0,30 ${Math.round((currentWkg/3.2)*100*0.9)},30" fill="none" stroke="var(--blue-text)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="${Math.round((currentWkg/3.2)*100*0.9)}" cy="30" r="3" fill="var(--blue-text)"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px"><span>now</span><span>3.2 Jun 2027</span></div>
+  </div>`;
+
+  // ---- Load chart ----
+  // Gather weekly load data from rides
+  const weeklyLoads = [];
+  const allWeeksWithRides = WEEKS.slice(0, WEEKS.findIndex(w=>w.week===(currentWeek?currentWeek.week:1))+1);
+  allWeeksWithRides.forEach(w => {
+    const wRides = rides.filter(r => cleanDate(r.date) >= w.start && cleanDate(r.date) <= w.end);
+    const load = wRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+    weeklyLoads.push({week:w.week, load, tag:w.tag, start:w.start});
+  });
+  const maxLoad = Math.max(...weeklyLoads.map(w=>w.load), 1);
+
+  if(true){ // always show load chart — placeholders when empty
+    const chartW = 300; const chartH = 64; const pad = 4;
+    const barW = Math.max(6, Math.min(22, Math.floor((chartW - pad*2) / weeklyLoads.length) - 3));
+    const spacing = (chartW - pad*2) / weeklyLoads.length;
+    const thisWeekLoad = weekRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+    const lastWeekLoad = prevRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+
+    // This week rides for bar chart
+    const DAY_NAMES_SHORT2 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const todayDayIdx2 = today_d.getDay()===0?6:today_d.getDay()-1;
+    const dayLoads = currentWeek ? DAY_NAMES_SHORT2.map((_,i) => {
+      if(!currentWeek) return 0;
+      const dDate = new Date(currentWeek.start+'T00:00:00');
+      dDate.setDate(dDate.getDate()+i);
+      const ds = dDate.toISOString().slice(0,10);
+      return rides.filter(r=>cleanDate(r.date)===ds).reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+    }) : Array(7).fill(0);
+    const maxDayLoad = Math.max(...dayLoads, 1);
+
+    html += `<div class="hcard" style="margin-bottom:12px;height:100%;box-sizing:border-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div class="hcard-label">Exercise load</div>
+          <div class="hcard-val">${Math.round(thisWeekLoad)} <span style="font-size:14px;font-weight:400;color:var(--text2)">this week</span></div>
+        </div>
+        <div style="text-align:right">
+          ${lastWeekLoad>0?`<div style="font-size:12px;color:${thisWeekLoad>=lastWeekLoad?'var(--green-text)':'var(--red-text)'};font-weight:600">${thisWeekLoad>=lastWeekLoad?'↑':'↓'} ${Math.abs(Math.round(thisWeekLoad-lastWeekLoad))} vs last week</div>`:''}
+          <div style="font-size:11px;color:var(--text3)">${weekRides.length} ride${weekRides.length!==1?'s':''} logged</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start"><div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px">This week — by ride</div>
+      <svg width="100%" height="72" viewBox="0 0 300 72" style="display:block">
+        <line x1="0" y1="56" x2="300" y2="56" stroke="var(--border)" stroke-width="0.5"/>
+        ${dayLoads.map((load,i)=>{
+          const x = i*(300/7)+((300/7)-28)/2;
+          const isToday = i===todayDayIdx2;
+          const isPast = i<todayDayIdx2;
+          if(load===0) return `<text x="${x+14}" y="68" font-size="8" fill="${isToday?'var(--green-text)':isPast?'var(--text3)':'var(--border)'}" text-anchor="middle">${DAY_NAMES_SHORT2[i]}</text>`;
+          const h = Math.round((load/maxDayLoad)*40);
+          return `<rect x="${x}" y="${56-h}" width="28" height="${h}" rx="2" fill="${isToday?'var(--green-text)':'var(--blue-text)'}" opacity="${isToday?1:0.8}"/>
+          <text x="${x+14}" y="${56-h-3}" font-size="9" fill="${isToday?'var(--green-text)':'var(--blue-text)'}" text-anchor="middle" font-weight="600">${Math.round(load)}</text>
+          <text x="${x+14}" y="68" font-size="8" fill="${isToday?'var(--green-text)':'var(--blue-text)'}" text-anchor="middle">${DAY_NAMES_SHORT2[i]}</text>`;
+        }).join('')}
+      </svg>
+      </div><div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px">Week by week</div>
+      <svg width="100%" height="90" viewBox="0 0 300 90" style="display:block">
+        ${weeklyLoads.map((w,i)=>{
+          const isRest = w.tag==='Recovery'||w.tag==='Holiday'||w.tag==='Reset';
+          if(isRest) return `<rect x="${i*(300/weeklyLoads.length)}" y="0" width="${300/weeklyLoads.length}" height="64" fill="var(--bg)" opacity=".5"/>`;
+          return '';
+        }).join('')}
+        <line x1="0" y1="70" x2="300" y2="70" stroke="var(--border)" stroke-width="0.5"/>
+        <line x1="0" y1="48" x2="300" y2="48" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+        ${(()=>{
+          const pts = weeklyLoads.map((w,i)=>{
+            const x = i*(300/weeklyLoads.length)+(300/weeklyLoads.length)/2;
+            const y = w.load>0 ? 64 - Math.round((w.load/maxLoad)*44) : 70;
+            return {x,y,load:w.load,isCurrent:w.week===(currentWeek?currentWeek.week:0)};
+          }).filter(p=>p.load>0);
+          if(pts.length<1) return '';
+          if(pts.length===1) return `<circle cx="${pts[0].x}" cy="${pts[0].y}" r="5" fill="${pts[0].isCurrent?'var(--green-text)':'var(--blue-text)'}"/><text x="${pts[0].x}" y="${pts[0].y-9}" font-size="9" fill="${pts[0].isCurrent?'var(--green-text)':'var(--text2)'}" text-anchor="middle" font-weight="600">${Math.round(pts[0].load)}</text>`;
+          const line = `<polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="var(--blue-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+          const dots = pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p.isCurrent?5:3}" fill="${p.isCurrent?'var(--green-text)':'var(--blue-text)'}" stroke="${p.isCurrent?'var(--green-text)':'var(--blue-text)'}" stroke-width="0" opacity="${p.isCurrent?1:0.6}"/>
+            <text x="${p.x}" y="${p.y-9}" font-size="9" fill="${p.isCurrent?'var(--green-text)':'var(--text2)'}" text-anchor="middle" font-weight="${p.isCurrent?'700':'400'}">${p.load>0?Math.round(p.load):''}</text>
+          `).join('');
+          return line+dots;
+        })()}
+        ${weeklyLoads.map((w,i)=>{
+          const x = i*(300/weeklyLoads.length)+(300/weeklyLoads.length)/2;
+          return `<text x="${x}" y="84" font-size="8" fill="${w.week===(currentWeek?currentWeek.week:0)?'var(--green-text)':'var(--text3)'}" text-anchor="middle">W${w.week}</text>`;
+        }).join('')}
+      </svg>
+      </div></div>
+    </div>`;
+  }
+
+  html += `</div>`; // close row 2
+
+  // ROW 3: Rides this week | This week vs last | Fuelling
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">`;
+  html += `<div class="hcard">
+    <div class="hcard-label">Rides this week</div>
+    <div class="hcard-val">${weekRides.length} <span style="font-size:14px;font-weight:400;color:var(--text2)">/ ${plannedRides}</span></div>
+    <div class="hcard-sub">${weekRides.length >= plannedRides && plannedRides > 0 ? '✓ week complete' : plannedRides - weekRides.length + ' remaining'}</div>
+    <div style="display:flex;gap:4px;margin-top:10px">
+      ${Array.from({length:plannedRides},(_,i) => `<div style="flex:1;height:6px;border-radius:3px;background:${i<weekRides.length?'var(--green-text)':'var(--border)'}"></div>`).join('')}
+    </div>
+  </div>`;
+  html += `<div class="hcard">
+    <div class="hcard-label">This week vs last</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
+      <div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Miles</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text)">${weekMiles.toFixed(1)}</div>
+        ${prevMiles>0?`<div style="font-size:12px;font-weight:600;color:${milesDelta>=0?'var(--green-text)':'var(--red-text)'}">
+          ${milesDelta>=0?'↑':'↓'} ${Math.abs(milesDelta).toFixed(1)} vs ${prevMiles.toFixed(1)}
+        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Time</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text)">${fmtHrs(weekHrs)}</div>
+        ${prevHrs>0?`<div style="font-size:12px;font-weight:600;color:${weekHrs>=prevHrs?'var(--green-text)':'var(--red-text)'}">
+          ${weekHrs>=prevHrs?'↑':'↓'} ${fmtHrs(Math.abs(weekHrs-prevHrs))} vs ${fmtHrs(prevHrs)}
+        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Load</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text)">${Math.round(weekLoad)||'—'}</div>
+        ${prevLoad>0?`<div style="font-size:12px;font-weight:600;color:${loadDelta>=0?'var(--green-text)':'var(--red-text)'}">
+          ${loadDelta>=0?'↑':'↓'} ${Math.abs(Math.round(loadDelta))} vs ${Math.round(prevLoad)}
+        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+      </div>
+    </div>
+  </div>
+  <div class="hcard">
+    <div class="hcard-label">Last ride fuelling</div>
+    ${lastFuelRide ? (()=>{
+      const carbs=parseInt(lastFuelRide.carbs)||0;
+      const hrs=parseFloat(lastFuelRide.time)||0;
+      const ghr=hrs>0?Math.round(carbs/hrs):0;
+      const fuelled=ghr>=60; const warn=ghr>=40&&ghr<60;
+      const color=fuelled?'var(--green-text)':warn?'var(--amber-text)':'var(--red-text)';
+      const label=fuelled?'Well fuelled':warn?'Low fuelling':'Under-fuelled';
+      const hydro=parseInt(lastFuelRide.bottles_hydro)||0;
+      const beta=parseInt(lastFuelRide.bottles_beta)||0;
+      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="font-size:16px;font-weight:700;color:${color}">${label}</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:2px">${carbs}g carbs total</div>
+      <div style="font-size:12px;color:var(--text2)">${ghr>0?ghr+'g/hr · ':''}target 60–90g/hr</div>
+      ${(hydro||beta)?`<div style="margin-top:8px;font-size:11px;color:var(--text3);border-top:1px solid var(--border-light);padding-top:8px">${hydro?hydro+'× Hydro 💧 ':''}${beta?beta+'× BETA Fuel ⚡':''}</div>`:''}`;
+    })() : `<div style="font-size:13px;color:var(--text2);font-weight:600;margin-bottom:4px">No fuel logged</div><div style="font-size:12px;color:var(--text3)">0g carbs recorded</div>`}
+  </div>
+</div>`;
+
+
+  // Week / Month / Total stats
+  const totalMiles = rides.reduce((s,r)=>s+(parseFloat(r.dist)||0),0);
+  const totalElev = rides.reduce((s,r)=>s+(parseFloat(r.elev)||0),0);
+  const totalLoad = rides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+  const monthLoad = monthRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+
+  const weekKj = weekRides.reduce((s,r)=>s+(parseFloat(r.kj)||0),0);
+  const weekElev2 = weekRides.reduce((s,r)=>s+(parseFloat(r.elev)||0),0);
+  const monthHrs = monthRides.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
+  const monthKj = monthRides.reduce((s,r)=>s+(parseFloat(r.kj)||0),0);
+  const totalHrs = rides.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
+  const totalKj = rides.reduce((s,r)=>s+(parseFloat(r.kj)||0),0);
+  function fmtHrs(h){if(!h||h===0)return'—';const hh=Math.floor(h);const mm=Math.round((h-hh)*60);return hh>0?hh+'h '+String(mm).padStart(2,'0')+'m':mm+'m';}
+  function statRow(label,val){return `<div style="color:var(--text3)">${label}</div><div style="color:var(--text);font-weight:600">${val}</div>`;}
+
+  html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;width:100%;box-sizing:border-box">
+    <div class="hcard">
+      <div class="hcard-label">This week</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">${weekMiles.toFixed(1)} <span style="font-size:12px;color:var(--text2)">mi</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px">
+        ${statRow('Hours',fmtHrs(weekHrs))}
+        ${statRow('Elevation','↑ '+Math.round(weekElev2).toLocaleString()+' ft')}
+        ${statRow('Load',Math.round(weekLoad)||'—')}
+        ${statRow('Energy',weekKj?Math.round(weekKj).toLocaleString()+' kJ':'—')}
+        ${statRow('Rides',weekRides.length+' of '+plannedRides)}
+      </div>
+    </div>
+    <div class="hcard">
+      <div class="hcard-label">This month</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">${monthMiles.toFixed(1)} <span style="font-size:12px;color:var(--text2)">mi</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px">
+        ${statRow('Hours',fmtHrs(monthHrs))}
+        ${statRow('Elevation','↑ '+Math.round(monthElev).toLocaleString()+' ft')}
+        ${statRow('Load',Math.round(monthLoad)||'—')}
+        ${statRow('Energy',monthKj?Math.round(monthKj).toLocaleString()+' kJ':'—')}
+        ${statRow('Rides',monthRides.length)}
+      </div>
+    </div>
+    <div class="hcard">
+      <div class="hcard-label">All time</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">${totalMiles.toFixed(1)} <span style="font-size:12px;color:var(--text2)">mi</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px">
+        ${statRow('Hours',fmtHrs(totalHrs))}
+        ${statRow('Elevation','↑ '+Math.round(totalElev).toLocaleString()+' ft')}
+        ${statRow('Load',Math.round(totalLoad)||'—')}
+        ${statRow('Energy',totalKj?Math.round(totalKj).toLocaleString()+' kJ':'—')}
+        ${statRow('Rides',rides.length)}
+      </div>
+    </div>
+  </div>`;
+
+  // Recent rides
+  if(recentRides.length > 0){
+    html += `<div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch"><div class="hcard">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">Recent rides</div>`;
+    recentRides.forEach(r => {
+      const wkg = wkgFromRide(r);
+      const typeColors = {Z:'var(--blue-bg)/var(--blue-text)', R:'var(--green-bg)/var(--green-text)', M:'var(--purple-bg)/var(--purple-text)'};
+      const [tbg, tc] = (typeColors[r.type]||'var(--bg)/var(--text2)').split('/');
+      html += `<div class="ride-row-home">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="background:${tbg};color:${tc};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">${r.type}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600">${fmtRideDate(r.date)}</div>
+            <div style="font-size:12px;color:var(--text3)">${r.route||''}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:600">${r.dist?fmt(r.dist,1)+' mi':'—'}${r.np?' · '+fmtInt(r.np)+'W':''}</div>
+          <div style="font-size:12px;color:var(--text3)">${wkg?wkg.toFixed(2)+' W/kg':''}${r.hr?' · '+fmtInt(r.hr)+' bpm':''}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>
+  <div class="hcard" style="align-self:stretch">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text2)">⚙ Settings</div>
+    <div class="settings-row">
+      <label>Current FTP (W)</label>
+      <input type="number" id="s-ftp" value="${currentFTP}" oninput="saveSettingsFromForm()">
+      <span style="font-size:11px;color:var(--text3)">updates zones + W/kg</span>
+    </div>
+    <div class="settings-row">
+      <label>Weight (lbs)</label>
+      <input type="number" id="s-weight" step="0.1" value="${currentWeight}" oninput="saveSettingsFromForm()">
+      <span style="font-size:11px;color:var(--text3)">updates W/kg</span>
+    </div>
+    <div class="settings-row">
+      <label>HRV baseline (ms)</label>
+      <input type="number" id="s-hrv" value="${HRV_BASE}" oninput="saveSettingsFromForm()">
+      <span style="font-size:11px;color:var(--text3)">used for readiness signal</span>
+    </div>
+  </div>
+  </div>`;
+  } else {
+    html += `<div class="hcard" style="margin-bottom:12px;text-align:center;color:var(--text3);font-size:13px">No rides logged yet — log your first ride in the Ride Tracker tab.</div>`;
+  }
+
+  // ---- Training log ----
+  const allWeeksToDate = WEEKS.filter(w => w.start <= todayStr);
+  const monthlyMap = {};
+  allWeeksToDate.forEach(w => {
+    const wRides = rides.filter(r => cleanDate(r.date) >= w.start && cleanDate(r.date) <= w.end);
+    const wMiles = wRides.reduce((s,r)=>s+(parseFloat(r.dist)||0),0);
+    const wHrs = wRides.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
+    const wElev = wRides.reduce((s,r)=>s+(parseFloat(r.elev)||0),0);
+    const wLoad = wRides.reduce((s,r)=>s+(parseFloat(r.load)||0),0);
+    const wKj = wRides.reduce((s,r)=>s+(parseFloat(r.kj)||0),0);
+    const isCurrent = currentWeek && w.week === currentWeek.week;
+    const lastWRide = wRides[0]; // rides sorted desc so first = most recent
+    const wFtp = lastWRide && lastWRide.ftp ? parseInt(lastWRide.ftp) : null;
+    const wVo2 = lastWRide && lastWRide.vo2 ? parseFloat(lastWRide.vo2) : null;
+    // weekly row
+    w._stats = {miles:wMiles, hrs:wHrs, elev:wElev, load:wLoad, kj:wKj, rides:wRides.length, isCurrent, ftp:wFtp, vo2:wVo2};
+
+    // accumulate monthly
+    const mKey = w.start.slice(0,7);
+    if(!monthlyMap[mKey]) monthlyMap[mKey] = {miles:0,hrs:0,elev:0,load:0,kj:0,rides:0};
+    monthlyMap[mKey].miles += wMiles;
+    monthlyMap[mKey].hrs += wHrs;
+    monthlyMap[mKey].elev += wElev;
+    monthlyMap[mKey].load += wLoad;
+    monthlyMap[mKey].kj += wKj;
+    monthlyMap[mKey].rides += wRides.length;
+  });
+
+  const tagColors = {Benchmark:'background:#14301e;color:#4ade80',Training:'background:#1e3a5f;color:#60a5fa',Recovery:'background:#1e1a3d;color:#a78bfa',Holiday:'background:#2d1f0a;color:#fbbf24',Milestone:'background:#1e3a5f;color:#60a5fa',Maintain:'background:#243044;color:#8fa3bf',Reset:'background:#243044;color:#8fa3bf',Taper:'background:#1e1a3d;color:#a78bfa',Event:'background:#14301e;color:#4ade80'};
+
+  let weekRows = [...allWeeksToDate].reverse().map(w => {
+    const s = w._stats;
+    const tagStyle = tagColors[w.tag] || 'background:#243044;color:#8fa3bf';
+    return `<tr style="${s.isCurrent?'color:var(--text);font-weight:600':''}">
+      <td style="${s.isCurrent?'color:var(--green-text);font-weight:700':'color:var(--text2)'}">W${w.week}</td>
+      <td style="color:var(--text3)">${new Date(w.start+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${new Date(w.end+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
+      <td><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;${tagStyle}">${w.tag}</span></td>
+      <td>${s.miles>0?s.miles.toFixed(1):'—'}</td>
+      <td>${s.hrs>0?fmtHrs(s.hrs):'—'}</td>
+      <td>${s.elev>0?'↑ '+Math.round(s.elev).toLocaleString()+' ft':'—'}</td>
+      <td>${s.load>0?Math.round(s.load):'—'}</td>
+      <td>${s.kj>0?Math.round(s.kj).toLocaleString():'—'}</td>
+      <td>${s.rides}</td>
+      <td>${s.ftp?s.ftp+'W':'—'}</td>
+      <td>${s.vo2?s.vo2.toFixed(1):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  let monthRows = Object.entries(monthlyMap).sort((a,b)=>b[0].localeCompare(a[0])).map(([mKey, s]) => {
+    const d = new Date(mKey+'-01T00:00:00');
+    const isCurrentMonth = mKey === todayStr.slice(0,7);
+    return `<tr style="${isCurrentMonth?'color:var(--text);font-weight:600':''}">
+      <td style="${isCurrentMonth?'color:var(--green-text);font-weight:700':'color:var(--text2)'}">${d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</td>
+      <td>${s.miles>0?s.miles.toFixed(1):'—'}</td>
+      <td>${s.hrs>0?fmtHrs(s.hrs):'—'}</td>
+      <td>${s.elev>0?'↑ '+Math.round(s.elev).toLocaleString()+' ft':'—'}</td>
+      <td>${s.load>0?Math.round(s.load):'—'}</td>
+      <td>${s.kj>0?Math.round(s.kj).toLocaleString():'—'}</td>
+      <td>${s.rides}</td>
+      <td>${s.ftp?s.ftp+'W':'—'}</td>
+      <td>${s.vo2?s.vo2.toFixed(1):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  html += `<div class="hcard" style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:1rem">Training log</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:.5rem">Weekly</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Week</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Dates</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Type</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Miles</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Hours</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Elevation</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Load</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">kJ</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Rides</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">FTP</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">VO2max</th>
+      </tr></thead>
+      <tbody style="color:var(--text2)">${weekRows}</tbody>
+    </table>
+    </div>
+    <div style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem">
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:.5rem">Monthly</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Month</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Miles</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Hours</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Elevation</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Load</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">kJ</th>
+        <th style="text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:5px 10px;border-bottom:1px solid var(--border)">Rides</th>
+      </tr></thead>
+      <tbody style="color:var(--text2)">${monthRows}</tbody>
+    </table>
+    </div>
+    </div>
+  </div>`;
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ============ FUELLING LOGGER ============ */
+let _foodCarbs = 0;
+let _bottlesHydro = 0;
+let _bottlesBeta = 0;
+const _foodCounts = {};
+
+function foodTap(btn, carbs, name){
+  _foodCarbs += carbs;
+  _foodCounts[name] = (_foodCounts[name]||0) + 1;
+  let badge = btn.querySelector('.ftap-badge');
+  if(!badge){ badge = document.createElement('div'); badge.className = 'ftap-badge'; btn.appendChild(badge); }
+  badge.textContent = _foodCounts[name];
+  btn.classList.add('tapped');
+  updateFoodSummary();
+}
+
+function foodOther(){
+  const g = parseInt(document.getElementById('food-other-g').value)||0;
+  if(g <= 0) return;
+  _foodCarbs += g;
+  document.getElementById('food-other-g').value = '';
+  updateFoodSummary();
+}
+
+function bottleTap(type){
+  if(type === 'hydro'){
+    _bottlesHydro++;
+    const b = document.getElementById('btn-hydro');
+    if(b){ b.style.borderColor='var(--green-text)'; b.style.background='var(--green-bg)'; b.style.color='var(--green-text)'; }
+  } else {
+    _bottlesBeta++;
+    _foodCarbs += 80;
+    const b = document.getElementById('btn-beta');
+    if(b){ b.style.borderColor='var(--blue-text)'; b.style.background='var(--blue-bg)'; b.style.color='var(--blue-text)'; }
+  }
+  updateFoodSummary();
+}
+
+function clearFood(){
+  _foodCarbs = 0; _bottlesHydro = 0; _bottlesBeta = 0;
+  Object.keys(_foodCounts).forEach(k => delete _foodCounts[k]);
+  document.querySelectorAll('.food-tap-btn').forEach(b => { b.classList.remove('tapped'); const badge = b.querySelector('.ftap-badge'); if(badge) badge.remove(); });
+  ['btn-hydro','btn-beta'].forEach(id=>{ const b=document.getElementById(id); if(b){ b.style.borderColor=''; b.style.background=''; b.style.color=''; }});
+  updateFoodSummary();
+}
+
+function updateFoodSummary(){
+  const el = document.getElementById('food-summary');
+  if(!el) return;
+  const parts = [];
+  if(_foodCarbs > 0) parts.push('<strong>' + _foodCarbs + 'g carbs</strong>');
+  if(_bottlesHydro > 0) parts.push(_bottlesHydro + '× Hydro 💧');
+  if(_bottlesBeta > 0) parts.push(_bottlesBeta + '× BETA Fuel ⚡');
+  // calculate g/hr if ride time entered
+  const hrs = (parseFloat(document.getElementById('f-hrs').value)||0) + (parseFloat(document.getElementById('f-min').value)||0)/60 + (parseFloat(document.getElementById('f-sec').value)||0)/3600;
+  if(hrs > 0 && _foodCarbs > 0){
+    const ghr = Math.round(_foodCarbs / hrs);
+    const flag = ghr >= 60 ? '✓ on target' : ghr >= 40 ? '⚠ low' : '✗ under-fuelled';
+    parts.push(ghr + 'g/hr · ' + flag);
+  }
+  el.innerHTML = parts.length ? parts.join(' · ') : '';
+}
+
+/* ============ INIT ============ */
+document.getElementById('f-date').value=today();
+calcWkg();
+populateMonthFilter();
+renderWeeks();
+renderDailyQuote();
+// Load rides first, then render home with real data
+(async()=>{
+  await loadRides();
+  renderHome();
+})();
+</script>
+
+<!-- ================================================================
+     GOOGLE APPS SCRIPT — deploy this separately in Google Apps Script
+     (script.google.com → New project → paste this code → Deploy)
+     
+     PASTE THIS INTO A NEW GOOGLE APPS SCRIPT PROJECT:
+
+const SHEET_NAME = 'NC500 Rides';
+const COLS = ['id','date','type','dist','elev','time','np','hr','maxhr','kj','weight','ftp','vo2','load','hrv','recovery','tstatus','carbs','bottles_hydro','bottles_beta','route','notes'];
+
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === 'ping') {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = getOrCreateSheet(ss);
+    return jsonResponse({ok: true, sheetName: sheet.getName()});
+  }
+  if (action === 'list') {
+    return jsonResponse({ok: true, rides: readRides()});
+  }
+  return jsonResponse({ok: false, error: 'Unknown action'});
+}
+
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  if (body.action === 'saveAll') {
+    writeRides(body.rides);
+    return jsonResponse({ok: true});
+  }
+  return jsonResponse({ok: false, error: 'Unknown action'});
+}
+
+function getOrCreateSheet(ss) {
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.getRange(1, 1, 1, COLS.length).setValues([COLS]);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function readRides() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss);
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  const headers = data[0];
+  return data.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = row[i] === '' ? '' : String(row[i]));
+    return obj;
+  });
+}
+
+function writeRides(rides) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss);
+  sheet.clearContents();
+  sheet.getRange(1, 1, 1, COLS.length).setValues([COLS]);
+  if (rides.length > 0) {
+    const rows = rides.map(r => COLS.map(c => r[c] || ''));
+    sheet.getRange(2, 1, rows.length, COLS.length).setValues(rows);
+  }
+}
+
+function jsonResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+     DEPLOYMENT STEPS:
+     1. Go to script.google.com → New project
+     2. Paste the code above (replacing the default function)
+     3. Click Deploy → New deployment → Web app
+     4. Execute as: Me | Who has access: Anyone
+     5. Click Deploy → copy the /exec URL
+     6. Open this HTML file → Ride Tracker tab → paste URL → Test connection
+================================================================ -->
+
+</body>
+</html>
