@@ -906,6 +906,23 @@ function fmt(n,d=1){ return n==null||n===''?'—':parseFloat(n).toFixed(d); }
 function fmtInt(n){ return n==null||n===''?'—':Math.round(n); }
 function fmtTime(h){ if(!h||parseFloat(h)===0)return'—'; const total=Math.round(parseFloat(h)*3600);const hh=Math.floor(total/3600);const mm=Math.floor((total%3600)/60); return hh>0?`${hh}h ${String(mm).padStart(2,'0')}m`:`${mm}m`; }
 
+function statsTabSwitch(tab){
+  const monthView = document.getElementById('stats-month-view');
+  const allView = document.getElementById('stats-all-view');
+  const monthTab = document.getElementById('stats-tab-month');
+  const allTab = document.getElementById('stats-tab-all');
+  if(!monthView||!allView) return;
+  if(tab==='month'){
+    monthView.style.display=''; allView.style.display='none';
+    monthTab.style.background='var(--surface)'; monthTab.style.color='var(--text)';
+    allTab.style.background=''; allTab.style.color='var(--text3)';
+  } else {
+    monthView.style.display='none'; allView.style.display='';
+    allTab.style.background='var(--surface)'; allTab.style.color='var(--text)';
+    monthTab.style.background=''; monthTab.style.color='var(--text3)';
+  }
+}
+
 function calcWkg(){
   const ftp=parseFloat(document.getElementById('wkg-ftp').value)||0;
   const lbs=parseFloat(document.getElementById('wkg-lbs').value)||0;
@@ -1361,12 +1378,9 @@ async function renderHome(){
   html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch">`;
   html += `<div class="hcard" style="min-width:0;overflow:hidden">
     <div class="hcard-label">W/kg</div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin:4px 0 8px">
-      <div class="hcard-val">${currentWkg.toFixed(2)}</div>
-      <div style="text-align:right">
-        <div style="font-size:11px;color:var(--text3)">Target</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green-text)">3.2+</div>
-      </div>
+    <div style="margin:4px 0 2px">
+      <div class="hcard-val" style="line-height:1">${currentWkg.toFixed(2)}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">Target <span style="color:var(--green-text);font-weight:700">3.2+</span></div>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${currentFTP}W · ${currentWeight} lbs</div>
     <svg width="100%" height="40" viewBox="0 0 100 40" preserveAspectRatio="none" style="display:block">
@@ -1409,14 +1423,15 @@ async function renderHome(){
     const maxDayLoad = Math.max(...dayLoads, 1);
 
     html += `<div class="hcard" style="margin-bottom:12px;height:100%;box-sizing:border-box">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <div class="hcard-label">Exercise load</div>
-          <div class="hcard-val">${Math.round(thisWeekLoad)} <span style="font-size:14px;font-weight:400;color:var(--text2)">this week</span></div>
-        </div>
-        <div style="text-align:right">
-          ${lastWeekLoad>0?`<div style="font-size:12px;color:${thisWeekLoad>=lastWeekLoad?'var(--green-text)':'var(--red-text)'};font-weight:600">${thisWeekLoad>=lastWeekLoad?'↑':'↓'} ${Math.abs(Math.round(thisWeekLoad-lastWeekLoad))} vs last week</div>`:''}
           <div style="font-size:11px;color:var(--text3)">${weekRides.length} ride${weekRides.length!==1?'s':''} logged</div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px">
+          <div class="hcard-val">${Math.round(thisWeekLoad)}</div>
+          <div style="font-size:13px;color:var(--text2)">this week</div>
+          ${lastWeekLoad>0?`<div style="font-size:12px;color:${thisWeekLoad>=lastWeekLoad?'var(--green-text)':'var(--red-text)'};font-weight:600;margin-left:auto">${thisWeekLoad>=lastWeekLoad?'↑':'↓'} ${Math.abs(Math.round(thisWeekLoad-lastWeekLoad))} vs last</div>`:''}
         </div>
       </div>
       <div style="display:flex;gap:16px;align-items:flex-start"><div style="flex:1;min-width:0">
@@ -1502,28 +1517,28 @@ async function renderHome(){
 </div>`;
   // Week vs Last — full width
   html += `<div class="hcard" style="margin-bottom:12px">
-    <div class="hcard-label">This week vs last</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
-      <div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Miles</div>
-        <div style="font-size:22px;font-weight:700;color:var(--text)">${weekMiles.toFixed(1)}</div>
+    <div class="hcard-label" style="margin-bottom:10px">This week vs last</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:var(--bg);border-radius:8px;padding:8px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">MILES</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text)">${weekMiles.toFixed(1)}</div>
         ${prevMiles>0?`<div style="font-size:12px;font-weight:600;color:${milesDelta>=0?'var(--green-text)':'var(--red-text)'}">
-          ${milesDelta>=0?'↑':'↓'} ${Math.abs(milesDelta).toFixed(1)} vs ${prevMiles.toFixed(1)}
-        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+          ${milesDelta>=0?'↑':'↓'} ${Math.abs(milesDelta).toFixed(1)}<div style="font-size:10px;color:var(--text3);font-weight:400">vs ${prevMiles.toFixed(1)}</div></div>`
+          :'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
       </div>
-      <div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Time</div>
-        <div style="font-size:22px;font-weight:700;color:var(--text)">${fmtHrs(weekHrs)}</div>
+      <div style="background:var(--bg);border-radius:8px;padding:8px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">TIME</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text)">${fmtHrs(weekHrs)||'—'}</div>
         ${prevHrs>0?`<div style="font-size:12px;font-weight:600;color:${weekHrs>=prevHrs?'var(--green-text)':'var(--red-text)'}">
-          ${weekHrs>=prevHrs?'↑':'↓'} ${fmtHrs(Math.abs(weekHrs-prevHrs))} vs ${fmtHrs(prevHrs)}
-        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+          ${weekHrs>=prevHrs?'↑':'↓'} ${fmtHrs(Math.abs(weekHrs-prevHrs))}<div style="font-size:10px;color:var(--text3);font-weight:400">vs ${fmtHrs(prevHrs)}</div></div>`
+          :'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
       </div>
-      <div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:4px">Load</div>
-        <div style="font-size:22px;font-weight:700;color:var(--text)">${Math.round(weekLoad)||'—'}</div>
+      <div style="background:var(--bg);border-radius:8px;padding:8px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">LOAD</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text)">${Math.round(weekLoad)||'—'}</div>
         ${prevLoad>0?`<div style="font-size:12px;font-weight:600;color:${loadDelta>=0?'var(--green-text)':'var(--red-text)'}">
-          ${loadDelta>=0?'↑':'↓'} ${Math.abs(Math.round(loadDelta))} vs ${Math.round(prevLoad)}
-        </div>`:'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
+          ${loadDelta>=0?'↑':'↓'} ${Math.abs(Math.round(loadDelta))}<div style="font-size:10px;color:var(--text3);font-weight:400">vs ${Math.round(prevLoad)}</div></div>`
+          :'<div style="font-size:11px;color:var(--text3)">no prior week</div>'}
       </div>
     </div>
   </div>`;
@@ -1541,7 +1556,7 @@ async function renderHome(){
   const totalHrs = rides.reduce((s,r)=>s+(parseFloat(r.time)||0),0);
   const totalKj = rides.reduce((s,r)=>s+(parseFloat(r.kj)||0),0);
   function fmtHrs(h){if(!h||h===0)return'—';const hh=Math.floor(h);const mm=Math.round((h-hh)*60);return hh>0?hh+'h '+String(mm).padStart(2,'0')+'m':mm+'m';}
-  function statRow(label,val){return `<div style="color:var(--text3)">${label}</div><div style="color:var(--text);font-weight:600">${val}</div>`;}
+  function statRow(label,val){return `<div style="color:var(--text2)">${label}</div><div style="color:var(--text);font-weight:600">${val}</div>`;}
 
   html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;width:100%;box-sizing:border-box">
     <div class="hcard">
@@ -1556,23 +1571,29 @@ async function renderHome(){
       </div>
     </div>
     <div class="hcard">
-      <div style="display:flex;gap:12px;margin-bottom:8px">
-        <div style="flex:1;border-right:1px solid var(--border-light);padding-right:12px">
-          <div class="hcard-label" style="margin-bottom:4px">This month</div>
-          <div style="font-size:18px;font-weight:700">${monthMiles.toFixed(1)} <span style="font-size:11px;color:var(--text2)">mi</span></div>
-        </div>
-        <div style="flex:1">
-          <div class="hcard-label" style="margin-bottom:4px">All time</div>
-          <div style="font-size:18px;font-weight:700">${totalMiles.toFixed(1)} <span style="font-size:11px;color:var(--text2)">mi</span></div>
+      <div style="display:flex;gap:0;margin-bottom:10px;background:var(--bg);border-radius:8px;padding:2px">
+        <div id="stats-tab-month" onclick="statsTabSwitch('month')" style="flex:1;text-align:center;padding:5px 0;border-radius:6px;background:var(--surface);font-size:12px;font-weight:600;color:var(--text);cursor:pointer">Month</div>
+        <div id="stats-tab-all" onclick="statsTabSwitch('all')" style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer">All time</div>
+      </div>
+      <div id="stats-month-view">
+        <div style="font-size:22px;font-weight:700;margin-bottom:8px">${monthMiles.toFixed(1)} <span style="font-size:12px;color:var(--text2)">mi</span></div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px">
+          <div style="color:var(--text2)">Hours</div><div style="color:var(--text);font-weight:600">${fmtHrs(monthHrs)||'—'}</div>
+          <div style="color:var(--text2)">Elevation</div><div style="color:var(--text);font-weight:600">↑ ${Math.round(monthElev).toLocaleString()} ft</div>
+          <div style="color:var(--text2)">Load</div><div style="color:var(--text);font-weight:600">${Math.round(monthLoad)||'—'}</div>
+          <div style="color:var(--text2)">Energy</div><div style="color:var(--text);font-weight:600">${monthKj?Math.round(monthKj).toLocaleString()+' kJ':'—'}</div>
+          <div style="color:var(--text2)">Rides</div><div style="color:var(--text);font-weight:600">${monthRides.length}</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px;border-top:1px solid var(--border-light);padding-top:8px">
-        ${statRow('Mo. hrs',fmtHrs(monthHrs))}
-        ${statRow('All hrs',fmtHrs(totalHrs))}
-        ${statRow('Mo. elev','↑ '+Math.round(monthElev).toLocaleString()+' ft')}
-        ${statRow('All elev','↑ '+Math.round(totalElev).toLocaleString()+' ft')}
-        ${statRow('Mo. rides',monthRides.length)}
-        ${statRow('All rides',rides.length)}
+      <div id="stats-all-view" style="display:none">
+        <div style="font-size:22px;font-weight:700;margin-bottom:8px">${totalMiles.toFixed(1)} <span style="font-size:12px;color:var(--text2)">mi</span></div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px">
+          <div style="color:var(--text2)">Hours</div><div style="color:var(--text);font-weight:600">${fmtHrs(totalHrs)||'—'}</div>
+          <div style="color:var(--text2)">Elevation</div><div style="color:var(--text);font-weight:600">↑ ${Math.round(totalElev).toLocaleString()} ft</div>
+          <div style="color:var(--text2)">Load</div><div style="color:var(--text);font-weight:600">${Math.round(totalLoad)||'—'}</div>
+          <div style="color:var(--text2)">Energy</div><div style="color:var(--text);font-weight:600">${totalKj?Math.round(totalKj).toLocaleString()+' kJ':'—'}</div>
+          <div style="color:var(--text2)">Rides</div><div style="color:var(--text);font-weight:600">${rides.length}</div>
+        </div>
       </div>
     </div>
   </div>`;
