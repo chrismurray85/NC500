@@ -1100,40 +1100,37 @@ function renderBenchmarkResults(){
   el.innerHTML = html;
 }
 
-function populatePlanRefDropdown(){
+function populatePlanRefDropdown(existingRef){
   const sel = document.getElementById('f-plan-ref');
   if(!sel) return;
+  const existing = existingRef || sel.value || '';
   const today = new Date();
   const currentWeekIdx = WEEKS.findIndex(w => {
     const wStart = new Date(w.start+'T00:00:00');
     const wEnd = new Date(w.end+'T23:59:59');
     return today >= wStart && today <= wEnd;
   });
-  const fromIdx = Math.max(0, currentWeekIdx - 1);
+  const fromIdx = Math.max(0, currentWeekIdx >= 0 ? currentWeekIdx - 1 : WEEKS.length - 1);
   const toIdx = currentWeekIdx >= 0 ? currentWeekIdx : WEEKS.length - 1;
   const relevantWeeks = WEEKS.slice(fromIdx, toIdx + 1).reverse();
-  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const existing = sel.value;
+  const DAY_NAMES_PL = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   sel.innerHTML = '<option value="">— not assigned —</option>';
-
-  // If editing a ride with an older plan_ref not in the visible weeks, add it first
-  if(existing && !relevantWeeks.some(w => w.days.some((d,i) => `W${w.week}-${DAY_NAMES[i]}`===existing))) {
+  if(existing && !relevantWeeks.some(w => w.days.some((d,i) => `W${w.week}-${DAY_NAMES_PL[i]}`===existing))) {
     const opt = document.createElement('option');
     opt.value = existing;
     opt.textContent = existing + ' (previously assigned)';
     opt.selected = true;
     sel.appendChild(opt);
   }
-
   relevantWeeks.forEach(w => {
     const grp = document.createElement('optgroup');
     grp.label = `W${w.week} (${w.start.slice(5).replace('-','/')} – ${w.end.slice(5).replace('-','/')})`;
     w.days.forEach((d,i) => {
       if(d.type==='X') return;
       const opt = document.createElement('option');
-      const ref = `W${w.week}-${DAY_NAMES[i]}`;
+      const ref = `W${w.week}-${DAY_NAMES_PL[i]}`;
       opt.value = ref;
-      opt.textContent = `${DAY_NAMES[i]} — ${d.label}`;
+      opt.textContent = `${DAY_NAMES_PL[i]} — ${d.label}`;
       if(ref===existing) opt.selected=true;
       grp.appendChild(opt);
     });
@@ -1147,14 +1144,14 @@ function goLogRide(){
   setTimeout(()=>{ toggleRideForm(true); window.scrollTo({top:0,behavior:'smooth'}); }, 50);
 }
 
-function toggleRideForm(forceOpen){
+function toggleRideForm(forceOpen, skipPlanRefReset){
   const card = document.getElementById('ride-form-card');
   const btn = document.getElementById('log-ride-btn');
   const isHidden = card.style.display==='none';
   const show = forceOpen !== undefined ? forceOpen : isHidden;
   card.style.display = show ? '' : 'none';
   btn.textContent = show ? '× Cancel' : '+ Log new ride';
-  if(show) populatePlanRefDropdown();
+  if(show && !skipPlanRefReset){ try{ populatePlanRefDropdown(''); }catch(e){ console.warn('plan dropdown error',e); } }
 }
 
 async function editRide(id){
@@ -1182,6 +1179,8 @@ async function editRide(id){
   document.getElementById('f-route').value=r.route||'';
   document.getElementById('f-notes').value=r.notes||'';
   document.getElementById('f-plan-ref').value=r.plan_ref||'';
+  try { populatePlanRefDropdown(r.plan_ref||''); } catch(e){ console.warn('plan dropdown error',e); }
+  document.getElementById('f-plan-ref').value=r.plan_ref||'';
   document.getElementById('f-hrv').value=r.hrv||'';
   document.getElementById('f-recovery').value=r.recovery||'';
   document.getElementById('f-tstatus').value=r.tstatus||'';
@@ -1193,7 +1192,7 @@ async function editRide(id){
   document.getElementById('cancel-edit-btn').style.display='inline-block';
   const trackerTab=[...document.querySelectorAll('.tnav-item')].find(t=>t.textContent.trim()==='Ride tracker');
   if(trackerTab) showSection('tracker', trackerTab);
-  toggleRideForm(true);
+  toggleRideForm(true, true);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
