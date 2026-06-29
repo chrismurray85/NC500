@@ -87,6 +87,7 @@
   .week-filter-bar select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:inherit}
   .week-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:12px}
   .week-card.benchmark{border-color:#d4b44a}
+  .week-card.milestone{border-color:#d4b44a}
   .week-card.current-week{border-color:#4ade80;border-width:2px;box-shadow:0 0 0 3px rgba(74,222,128,0.12)}
   .current-week-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--green-bg);color:var(--green-text);margin-left:6px}
   .week-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;flex-wrap:wrap}
@@ -667,18 +668,18 @@ const WEEKS = [
   {week:2,phase:'base',month_label:'June',tag:'Training',start:'2026-06-22',end:'2026-06-28',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 45m'},{type:'Z',label:'Z3 4x5min (45m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'First full training week. FTP confirmed at 170W. Keep it Zwift-only — too hot outside.'},
   {week:3,phase:'base',month_label:'July',tag:'Training',start:'2026-06-29',end:'2026-07-05',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'Z',label:'Z3 2x15min (1h)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1.5h'},{type:'X',label:'Rest'}],note:'Building duration. One ride extends to 90 min this week.'},
   {week:4,phase:'base',month_label:'July',tag:'Training',start:'2026-07-06',end:'2026-07-12',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'Z',label:'Z3 2x15min (1h)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'One structured Z3 session mid-week. Stone Mountain stays off until W3.'},
-  {week:5,phase:'base',month_label:'July',tag:'Milestone',start:'2026-07-13',end:'2026-07-19',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'Z',label:'Z3 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 25–30mi'},{type:'Z',label:'Easy 30m'}],note:'First Stone Mountain outing — 25–30 mi, 6am start to beat the heat. Zwift for the rest of the week. ⚠️ Tue Jul 15: HR drift retest — repeat Jun 24 session (130W, 10m warmup + 40m steady) and compare avg HR. Target: 10–15 bpm lower than 149 bpm baseline.'},
+  {week:5,phase:'base',month_label:'July',tag:'Milestone',start:'2026-07-13',end:'2026-07-19',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'Z',label:'HR drift test (50m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 25–30mi'},{type:'Z',label:'Easy 30m'}],note:'Milestone week. Tue: FTP ramp test — establish new baseline. Wed: HR drift retest — repeat Jun 24 session (130W, 10m warmup + 40m steady), target avg HR 10–15 bpm lower than 149 bpm baseline. Sat: first Stone Mountain outing 25–30mi, 6am start.'},
   {week:6,phase:'base',month_label:'July',tag:'Holiday',start:'2026-07-20',end:'2026-07-26',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'}],note:'Holiday Jul 21–31. Easy riding or full rest — no targets this week.'},
-  {week:7,phase:'base',month_label:'August',tag:'Holiday',start:'2026-07-27',end:'2026-08-02',benchmark:false,days:[{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Easy 45m'},{type:'X',label:'Rest'}],note:'Back from holiday. Easy Zwift to re-engage. First Alpe attempt this week — just complete it and note the time.'},
-  {week:8,phase:'base',month_label:'August',tag:'Training',start:'2026-08-03',end:'2026-08-09',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Alpe du Zwift (1st attempt) (1h30m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'}],note:'Sweet spot intro: 2x15min @ 88% FTP. First Stone Mountain ride of the month — 30 mi Saturday.'},
+  {week:7,phase:'base',month_label:'August',tag:'Holiday',start:'2026-07-27',end:'2026-08-02',benchmark:false,days:[{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Holiday'},{type:'X',label:'Travelling'},{type:'Z',label:'Easy 45m'}],note:'Travelling back Sat. First ride home Sunday — easy Zwift to re-engage legs.'},
+  {week:8,phase:'base',month_label:'August',tag:'Training',start:'2026-08-03',end:'2026-08-09',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Alpe du Zwift (1st attempt) (1h30m)'},{type:'X',label:'Rest'}],note:'First Alpe du Zwift attempt Saturday — just complete it and note the time. Easy Zwift mid-week to stay fresh for it.'},
   {week:9,phase:'base',month_label:'August',tag:'Training',start:'2026-08-10',end:'2026-08-16',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'R',label:'Stone Mtn 25mi'}],note:'Stone Mountain back-to-back weekend: Sat 40mi + Sun 25mi, 6am starts both days.'},
   {week:10,phase:'base',month_label:'August',tag:'Benchmark',start:'2026-08-17',end:'2026-08-23',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'}],note:'Recovery week. FTP test + Alpe du Zwift. Target: 185W / sub-90 min. This Alpe result is the Three Gap Fifty go/no-go.'},
-  {week:11,phase:'base',month_label:'September',tag:'Holiday',start:'2026-08-24',end:'2026-08-30',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:"Away on a work trip. Easy or rest — don't force training this week."},
-  {week:12,phase:'base',month_label:'September',tag:'Training',start:'2026-08-31',end:'2026-09-06',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40–50mi'},{type:'Z',label:'Easy 30m'}],note:'Back from travel. Stone Mountain 40–50mi. Zwift sweet spot mid-week.'},
-  {week:13,phase:'base',month_label:'September',tag:'Event',start:'2026-09-07',end:'2026-09-13',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Three Gap Fifty (58mi/6000ft)'},{type:'R',label:'Easy recovery spin (30m)'}],note:'Three Gap Fifty (Sep 27/28) — conditional on Aug Alpe sub-90min. 58mi / 6,000ft out of Dahlonega. Ride easy, walk steep bits, finish it. Preview of the April tour route.'},
-  {week:14,phase:'base',month_label:'September',tag:'Benchmark',start:'2026-09-14',end:'2026-09-20',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy spin (30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery after Three Gap. FTP test. Target: 190W.'},
-  {week:15,phase:'build',month_label:'October',tag:'Training',start:'2026-09-21',end:'2026-09-27',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 40mi'},{type:'Z',label:'Easy 30m'}],note:'Sweet spot 2x20min @ 88–93% FTP. Stone Mountain 40mi Saturday.'},
-  {week:16,phase:'build',month_label:'October',tag:'Training',start:'2026-09-28',end:'2026-10-04',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'VO2 5x4min (45m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 50mi'},{type:'R',label:'Stone Mtn 30mi'}],note:'VO2max: 5x4min on Zwift. Stone Mountain back-to-back: 50mi Sat + 30mi Sun.'},
+  {week:11,phase:'base',month_label:'August',tag:'Training',start:'2026-08-24',end:'2026-08-30',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x15min (1h)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'Z',label:'Zwift 40–50mi (~3,000ft)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Fri AM Zwift long ride 40–50mi with ~3,000ft elevation (Watopia Hilly or Epic KOM). Sat rest — fly Sun 30th. No outdoor riding this week.'},
+  {week:12,phase:'base',month_label:'September',tag:'Holiday',start:'2026-08-31',end:'2026-09-06',benchmark:false,days:[{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Land 5pm'},{type:'Z',label:'Easy spin 30m'}],note:"Away travelling. Land Sat 5pm. Light Zwift spin Sunday to shake off the travel."},
+  {week:13,phase:'base',month_label:'September',tag:'Training',start:'2026-09-07',end:'2026-09-13',benchmark:false,days:[{type:'Z',label:'Z2 1.5h'},{type:'X',label:'Rest'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'R',label:'Stone Mtn 35mi'},{type:'X',label:'Rest'}],note:'Mon public holiday — Z2 1.5h. Back into training. Stone Mountain 35mi Saturday. Three Gap in two weeks.'},
+  {week:14,phase:'base',month_label:'September',tag:'Benchmark',start:'2026-09-14',end:'2026-09-20',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Easy spin (30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'FTP ramp test Tuesday. Target: 190W. Then easy Zwift and rest — legs fresh for Three Gap next Saturday.'},
+  {week:15,phase:'build',month_label:'October',tag:'Event',start:'2026-09-21',end:'2026-09-27',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 45m'},{type:'Z',label:'Z2 45m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Three Gap Fifty (58mi/6000ft)'}],note:'Three Gap Fifty Sunday Sep 27 — 58mi / 6,000ft out of Dahlonega. Keep Mon–Sat very easy. Ride easy, walk steep bits, finish it. Preview of the April tour route.'},
+  {week:16,phase:'build',month_label:'October',tag:'Recovery',start:'2026-09-28',end:'2026-10-04',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m'},{type:'Z',label:'Easy 45m'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'Z',label:'Easy 1h'},{type:'X',label:'Rest'}],note:'Recovery week after Three Gap. Easy Zwift only — legs need this. FTP test next week.'},
   {week:17,phase:'build',month_label:'October',tag:'Milestone',start:'2026-10-05',end:'2026-10-11',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'SS 2x20min (1h15m)'},{type:'Z',label:'Z2 1h'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'R',label:'Stone Mtn 60mi'},{type:'Z',label:'Easy spin (30m)'}],note:'Stone Mountain 60mi big day. Use the car as a feed station between loops.'},
   {week:18,phase:'build',month_label:'October',tag:'Benchmark',start:'2026-10-12',end:'2026-10-18',benchmark:true,days:[{type:'X',label:'Rest'},{type:'Z',label:'FTP ramp test (20m)'},{type:'X',label:'Rest'},{type:'Z',label:'Alpe du Zwift (1h30m)'},{type:'Z',label:'Easy spin (30m)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Recovery. FTP test + Alpe. Target: 195W / sub-85 min.'},
   {week:19,phase:'build',month_label:'November',tag:'Holiday',start:'2026-10-19',end:'2026-10-25',benchmark:false,days:[{type:'X',label:'Rest'},{type:'Z',label:'Easy 30m (opt)'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'},{type:'X',label:'Rest'}],note:'Away on a work trip. Extra recovery — easy Zwift only.'},
@@ -803,7 +804,7 @@ function renderWeeks(){
     const wStart = new Date(w.start + 'T00:00:00');
     const wEnd = new Date(w.end + 'T23:59:59');
     const isCurrent = today >= wStart && today <= wEnd;
-    html += `<div class="week-card${w.benchmark?' benchmark':''}${isCurrent?' current-week':''}">
+    html += `<div class="week-card${w.benchmark?' benchmark':''}${w.tag==='Milestone'?' milestone':''}${isCurrent?' current-week':''}">
       <div class="week-hdr">
         <div><span class="week-num">WEEK ${w.week}</span> <span class="week-tag week-tag-${w.tag}">${w.tag}</span>${isCurrent?'<span class="current-week-badge">▶ This week</span>':''}</div>
       </div>
@@ -1366,8 +1367,8 @@ async function renderHome(){
   const dayOfWeek = today_d.getDay(); // 0=Sun
   const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon=0
 
-  // Find next benchmark week
-  const nextBenchmark = WEEKS.find(w => w.benchmark && w.start > todayStr);
+  // Find next benchmark or milestone week
+  const nextBenchmark = WEEKS.find(w => (w.benchmark || w.tag==='Milestone') && w.start > todayStr);
 
   // Build zone table at current FTP
   const s = loadSettings();
@@ -1532,19 +1533,22 @@ async function renderHome(){
       <span style="font-size:12px;font-weight:600;color:#f0f6ff">${z.lo}${z.hi?'–'+z.hi+'W':'+W'}</span>
     </div>`).join('')}
   </div>`;
+  const benchTargetFTP = nextBenchmark ? (FTP_BY_MONTH[nextBenchmark.month_label] || 170) : null;
+  const ftpGap = benchTargetFTP ? benchTargetFTP - currentFTP : null;
   html += `<div class="hcard">
-    <div class="hcard-label">Next benchmark</div>
+    <div class="hcard-label">Next ${nextBenchmark?.tag==='Milestone' ? 'milestone' : 'benchmark'}</div>
     ${nextBenchmark ? `
     <div class="hcard-val">${new Date(nextBenchmark.start+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
     <div class="hcard-sub">${daysToBench} days · Week ${nextBenchmark.week}</div>
-    <div style="border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px">
-      <div style="font-size:11px;color:#7fa3c8">FTP ramp test + Alpe</div>
+    <div style="border-top:1px solid #3a5068;padding-top:8px;margin-top:8px">
+      <div style="font-size:11px;color:#7fa3c8;margin-bottom:6px">${nextBenchmark.tag==='Milestone' ? 'FTP ramp test + HR drift' : 'FTP ramp test + Alpe'}</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div style="font-size:18px;font-weight:700;color:#f0f6ff">${benchTargetFTP}W</div>
+        <div style="font-size:11px;color:#7fa3c8">target FTP</div>
+        ${ftpGap > 0 ? `<div style="font-size:12px;color:var(--amber-text);font-weight:600;margin-left:auto">+${ftpGap}W needed</div>` : `<div style="font-size:12px;color:var(--green-text);font-weight:600;margin-left:auto">✓ on target</div>`}
+      </div>
+      <div style="font-size:11px;color:#7fa3c8;margin-top:3px">current ${currentFTP}W · gap ${ftpGap > 0 ? ftpGap+'W' : 'none'}</div>
     </div>` : '<div class="hcard-sub">No upcoming benchmark</div>'}
-    ${hrvVal ? `<div style="border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:3px">HRV (last ride)</div>
-      <div style="font-size:16px;font-weight:700;color:${hrvStatus==='good'?'var(--green-text)':hrvStatus==='caution'?'var(--amber-text)':'var(--red-text)'}">${hrvVal}ms</div>
-      <div style="font-size:11px;color:#7fa3c8">${hrvDiff > 0 ? '↑' : '↓'} ${Math.abs(hrvDiff)} vs baseline · ${hrvStatus}</div>
-    </div>` : ''}
   </div>
 </div>`; // close 2-col zones+benchmark
   html += `</div>`; // close ROW1 wrapper
