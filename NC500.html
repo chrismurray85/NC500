@@ -204,6 +204,7 @@
   .hw-M{background:var(--purple-bg);color:var(--purple-text)}
   .hw-X{background:#1e2d42;color:#5a7a99;font-weight:500}
   .hw-today{background:var(--green-text);color:#fff}
+  .day-done{box-shadow:inset 0 0 0 2px #4ade80}
   .ride-row-home{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #3a5068}
   .ride-row-home:last-child{border-bottom:none}
   .bar-wrap{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:3px}
@@ -357,6 +358,7 @@
     </div>
     <div class="form-grid">
       <div class="form-group" style="grid-column:1/-1"><label>Route / Venue</label><input type="text" id="f-route" placeholder="e.g. Zwift Watopia, Stone Mountain, Three Gap…"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Assign to plan workout <span style="font-size:11px;color:var(--text3)">(optional)</span></label><select id="f-plan-ref"><option value="">— not assigned —</option></select></div>
       <div class="form-group" style="grid-column:1/-1"><label>Notes</label><textarea id="f-notes" placeholder="How did it feel? Any observations…"></textarea></div>
     </div>
     <!-- Fuelling logger -->
@@ -791,6 +793,9 @@ function renderWeeks(){
   let weeks = WEEKS.filter(w=>w.phase===currentPhase);
   if(monthF) weeks = weeks.filter(w=>w.month_label===monthF);
   if(weeks.length){ document.getElementById('phase-range-label').textContent = fmtDateRange(weeks[0].start, weeks[weeks.length-1].end); }
+  const rides = _ridesCache || [];
+  const completedRefs = new Set(rides.map(r=>r.plan_ref).filter(Boolean));
+  const DAY_NAMES_SHORT3 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let html = '';
   weeks.forEach(w=>{
     const ftp = FTP_BY_MONTH[w.month_label] || 170;
@@ -807,12 +812,14 @@ function renderWeeks(){
       <div class="day-grid">
         ${w.days.map((d,i)=>{
           const cellId = `cell-${w.week}-${i}`;
+          const ref = `W${w.week}-${DAY_NAMES_SHORT3[i]}`;
+          const done = d.type!=='X' && completedRefs.has(ref);
           const detail = d.type!=='X' ? workoutDetail(d.label) : null;
           const expandable = !!detail;
-          const dataAttr = expandable ? `data-ftp="${ftp}" data-pctlo="${detail.pctLo}" data-pcthi="${detail.pctHi}" data-workout="${escapeAttr(detail.workout)}" data-interval="${escapeAttr(detail.intervalNote||'')}"` : '';
+          const dataAttr = expandable ? `data-ftp="${ftp}" data-pctlo="${detail.pctLo}" data-pcthi="${detail.pctHi}" data-workout="${escapeAttr(detail.workout)}" data-interval="${escapeAttr(detail.intervalNote||'')}"`  : '';
           return `<div class="day-col">
             <div class="day-name">${DAY_NAMES[i]}</div>
-            <div class="day-cell type-${d.type}${expandable?' expandable':''}" id="${cellId}" ${dataAttr} ${expandable?`onclick="toggleDay('${cellId}')"`:''}>${d.label}${expandable?'<span class="expand-hint">▾</span>':''}</div>
+            <div class="day-cell type-${d.type}${expandable?' expandable':''}${done?' day-done':''}" id="${cellId}" style="position:relative" ${dataAttr} ${expandable?`onclick="toggleDay('${cellId}')"`:''}>${done?'<span style="position:absolute;top:3px;right:4px;font-size:11px;line-height:1;color:#4ade80;font-weight:700">✓</span>':''} ${d.label}${expandable?'<span class="expand-hint">▾</span>':''}</div>
           </div>`;
         }).join('')}
       </div>
@@ -994,7 +1001,8 @@ async function saveRide(){
     bottles_hydro: _bottlesHydro.toString(),
     bottles_beta: _bottlesBeta.toString(),
     route: document.getElementById('f-route').value,
-    notes: document.getElementById('f-notes').value
+    notes: document.getElementById('f-notes').value,
+    plan_ref: document.getElementById('f-plan-ref').value
   };
   if(!d.dist&&!d.time){ document.getElementById('log-status').textContent='Add at least distance or time.'; btn.disabled=false; return; }
   const rides = await loadRides();
@@ -1017,6 +1025,7 @@ async function saveRide(){
 
 function clearForm(){
   ['f-dist','f-elev','f-hrs','f-min','f-sec','f-np','f-hr','f-maxhr','f-kj','f-vo2','f-load','f-hrv','f-recovery','f-route','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-plan-ref').value='';
   document.getElementById('f-tstatus').value='';
   clearFood();
   document.getElementById('f-date').value=today();
@@ -1091,6 +1100,47 @@ function renderBenchmarkResults(){
   el.innerHTML = html;
 }
 
+function populatePlanRefDropdown(){
+  const sel = document.getElementById('f-plan-ref');
+  if(!sel) return;
+  const today = new Date();
+  const currentWeekIdx = WEEKS.findIndex(w => {
+    const wStart = new Date(w.start+'T00:00:00');
+    const wEnd = new Date(w.end+'T23:59:59');
+    return today >= wStart && today <= wEnd;
+  });
+  const fromIdx = Math.max(0, currentWeekIdx - 1);
+  const toIdx = currentWeekIdx >= 0 ? currentWeekIdx : WEEKS.length - 1;
+  const relevantWeeks = WEEKS.slice(fromIdx, toIdx + 1).reverse();
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const existing = sel.value;
+  sel.innerHTML = '<option value="">— not assigned —</option>';
+
+  // If editing a ride with an older plan_ref not in the visible weeks, add it first
+  if(existing && !relevantWeeks.some(w => w.days.some((d,i) => `W${w.week}-${DAY_NAMES[i]}`===existing))) {
+    const opt = document.createElement('option');
+    opt.value = existing;
+    opt.textContent = existing + ' (previously assigned)';
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  relevantWeeks.forEach(w => {
+    const grp = document.createElement('optgroup');
+    grp.label = `W${w.week} (${w.start.slice(5).replace('-','/')} – ${w.end.slice(5).replace('-','/')})`;
+    w.days.forEach((d,i) => {
+      if(d.type==='X') return;
+      const opt = document.createElement('option');
+      const ref = `W${w.week}-${DAY_NAMES[i]}`;
+      opt.value = ref;
+      opt.textContent = `${DAY_NAMES[i]} — ${d.label}`;
+      if(ref===existing) opt.selected=true;
+      grp.appendChild(opt);
+    });
+    if(grp.children.length > 0) sel.appendChild(grp);
+  });
+}
+
 function goLogRide(){
   const trackerTab=[...document.querySelectorAll('.tnav-item')].find(t=>t.textContent.trim()==='Ride tracker');
   if(trackerTab) showSection('tracker', trackerTab);
@@ -1104,6 +1154,7 @@ function toggleRideForm(forceOpen){
   const show = forceOpen !== undefined ? forceOpen : isHidden;
   card.style.display = show ? '' : 'none';
   btn.textContent = show ? '× Cancel' : '+ Log new ride';
+  if(show) populatePlanRefDropdown();
 }
 
 async function editRide(id){
@@ -1130,6 +1181,7 @@ async function editRide(id){
   document.getElementById('f-load').value=r.load||'';
   document.getElementById('f-route').value=r.route||'';
   document.getElementById('f-notes').value=r.notes||'';
+  document.getElementById('f-plan-ref').value=r.plan_ref||'';
   document.getElementById('f-hrv').value=r.hrv||'';
   document.getElementById('f-recovery').value=r.recovery||'';
   document.getElementById('f-tstatus').value=r.tstatus||'';
@@ -1628,13 +1680,17 @@ async function renderHome(){
   } // end if(true) load chart
 
   // ROW 3: Rides this week | Fuelling (2-col); Week vs Last full width below
+  const DAY_NAMES_SHORT4 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const completedPlanRefs = currentWeek ? new Set(weekRides.map(r=>r.plan_ref).filter(Boolean)) : new Set();
+  const planDays = currentWeek ? currentWeek.days.map((d,i)=>({...d,ref:`W${currentWeek.week}-${DAY_NAMES_SHORT4[i]}`})).filter(d=>d.type!=='X') : [];
+  const planDone = planDays.filter(d=>completedPlanRefs.has(d.ref)).length;
   html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">`;
   html += `<div class="hcard">
     <div class="hcard-label">Rides this week</div>
     <div class="hcard-val">${weekRides.length} <span style="font-size:14px;font-weight:400;color:#a8c4e0">/ ${plannedRides}</span></div>
-    <div class="hcard-sub">${weekRides.length >= plannedRides && plannedRides > 0 ? '✓ week complete' : plannedRides - weekRides.length + ' remaining'}</div>
-    <div style="display:flex;gap:4px;margin-top:10px">
-      ${Array.from({length:plannedRides},(_,i) => `<div style="flex:1;height:6px;border-radius:3px;background:${i<weekRides.length?'var(--green-text)':'var(--border)'}"></div>`).join('')}
+    <div class="hcard-sub">${planDone > 0 ? `${planDone} of ${planDays.length} plan workouts done` : weekRides.length >= plannedRides && plannedRides > 0 ? '✓ week complete' : plannedRides - weekRides.length + ' remaining'}</div>
+    <div style="display:flex;gap:3px;margin-top:10px">
+      ${planDays.length > 0 ? planDays.map(d=>`<div title="${d.label}" style="flex:1;height:6px;border-radius:3px;background:${completedPlanRefs.has(d.ref)?'#4ade80':'var(--border)'}"></div>`).join('') : Array.from({length:plannedRides},(_,i)=>`<div style="flex:1;height:6px;border-radius:3px;background:${i<weekRides.length?'var(--green-text)':'var(--border)'}"></div>`).join('')}
     </div>
   </div>`;
   html += `<div class="hcard">
@@ -1969,6 +2025,7 @@ renderDailyQuote();
 (async()=>{
   await loadRides();
   renderHome();
+  renderWeeks(); // re-render with completion ticks
 })();
 </script>
 
@@ -1979,7 +2036,7 @@ renderDailyQuote();
      PASTE THIS INTO A NEW GOOGLE APPS SCRIPT PROJECT:
 
 const SHEET_NAME = 'NC500 Rides';
-const COLS = ['id','date','type','dist','elev','time','np','hr','maxhr','kj','weight','ftp','vo2','load','hrv','recovery','tstatus','carbs','bottles_hydro','bottles_beta','route','notes'];
+const COLS = ['id','date','type','dist','elev','time','np','hr','maxhr','kj','weight','ftp','vo2','load','hrv','recovery','tstatus','carbs','bottles_hydro','bottles_beta','route','notes','plan_ref'];
 
 function doGet(e) {
   const action = e.parameter.action;
