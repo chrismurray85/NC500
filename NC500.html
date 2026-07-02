@@ -352,6 +352,10 @@
           <option value="Productive">Productive</option>
           <option value="Maintaining">Maintaining</option>
           <option value="Peaking">Peaking</option>
+          <option value="Strained">Strained</option>
+          <option value="Detraining">Detraining</option>
+          <option value="Overreaching">Overreaching</option>
+          <option value="Peaking">Peaking</option>
           <option value="Detraining">Detraining</option>
           <option value="Overreaching">Overreaching</option>
         </select>
@@ -789,11 +793,12 @@ function populateMonthFilter(){
   if(![...sel.options].some(o=>o.value===cur)) sel.value='';
 }
 
-function renderWeeks(){
+async function renderWeeks(){
   const monthF = document.getElementById('month-filter').value;
   let weeks = WEEKS.filter(w=>w.phase===currentPhase);
   if(monthF) weeks = weeks.filter(w=>w.month_label===monthF);
   if(weeks.length){ document.getElementById('phase-range-label').textContent = fmtDateRange(weeks[0].start, weeks[weeks.length-1].end); }
+  if(!_ridesCache) await loadRides();
   const rides = _ridesCache || [];
   const completedRefs = new Set(rides.map(r=>r.plan_ref).filter(Boolean));
   const DAY_NAMES_SHORT3 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -1476,7 +1481,7 @@ async function renderHome(){
     const hrvDiff2 = rHRV ? rHRV - HRV_BASE : null;
     const hrvColor = !rHRV ? 'var(--text3)' : hrvDiff2 >= -4 ? 'var(--green-text)' : hrvDiff2 >= -10 ? 'var(--amber-text)' : 'var(--red-text)';
     const recColor = !rRec ? 'var(--text3)' : rRec <= 24 ? 'var(--green-text)' : rRec <= 48 ? 'var(--amber-text)' : 'var(--red-text)';
-    const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : rStatus==='Maintaining' ? 'var(--amber-text)' : 'var(--red-text)';
+    const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : (rStatus==='Maintaining'||rStatus==='Strained') ? 'var(--amber-text)' : 'var(--red-text)';
     const signals = [rHRV?hrvColor:null, rRec?recColor:null, rStatus?statusColor:null].filter(Boolean);
     const overallRed = signals.filter(s=>s==='var(--red-text)').length;
     const overallAmber = signals.filter(s=>s==='var(--amber-text)').length;
