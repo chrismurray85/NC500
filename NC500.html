@@ -799,8 +799,9 @@ async function renderWeeks(){
   if(monthF) weeks = weeks.filter(w=>w.month_label===monthF);
   if(weeks.length){ document.getElementById('phase-range-label').textContent = fmtDateRange(weeks[0].start, weeks[weeks.length-1].end); }
   if(!_ridesCache) await loadRides();
-  const rides = _ridesCache || [];
+  const rides = _ridesCache || (()=>{ try{ return JSON.parse(localStorage.getItem('nc500-rides-v2')||'[]'); }catch(e){ return []; } })();
   const completedRefs = new Set(rides.map(r=>r.plan_ref).filter(Boolean));
+  console.log('renderWeeks: completedRefs =', [...completedRefs]);
   const DAY_NAMES_SHORT3 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let html = '';
   weeks.forEach(w=>{
@@ -905,6 +906,7 @@ function showSection(id,el){
   if(id==='tracker'){ initGsSetup(); renderHistory(); renderMiniSummary(); calcWkg(); }
   if(id==='home'){ renderHome(); }
   if(id==='benchmarks'){ renderBenchmarkResults(); }
+  if(id==='plan'){ renderWeeks(); }
 }
 
 /* ============ RIDE TRACKER ============ */
