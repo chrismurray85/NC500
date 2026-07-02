@@ -1493,7 +1493,11 @@ async function renderHome(){
     const rStatus = lastRideWithData.tstatus || null;
     const hrvDiff2 = rHRV ? rHRV - HRV_BASE : null;
     const hrvColor = !rHRV ? 'var(--text3)' : hrvDiff2 >= -4 ? 'var(--green-text)' : hrvDiff2 >= -10 ? 'var(--amber-text)' : 'var(--red-text)';
-    const recColor = !rRec ? 'var(--text3)' : rRec <= 24 ? 'var(--green-text)' : rRec <= 48 ? 'var(--amber-text)' : 'var(--red-text)';
+    // Calculate hours since last ride
+    const rideDate = cleanDate(lastRideWithData.date);
+    const hoursElapsed = rideDate ? Math.floor((today_d - new Date(rideDate+'T12:00:00')) / (1000*60*60)) : 0;
+    const recRemaining = rRec ? Math.max(0, rRec - hoursElapsed) : null;
+    const recColor = !rRec ? 'var(--text3)' : recRemaining === 0 ? 'var(--green-text)' : recRemaining <= 12 ? 'var(--green-text)' : recRemaining <= 24 ? 'var(--amber-text)' : 'var(--red-text)';
     const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : (rStatus==='Maintaining'||rStatus==='Strained') ? 'var(--amber-text)' : 'var(--red-text)';
     const signals = [rHRV?hrvColor:null, rRec?recColor:null, rStatus?statusColor:null].filter(Boolean);
     const overallRed = signals.filter(s=>s==='var(--red-text)').length;
@@ -1524,8 +1528,8 @@ async function renderHome(){
       ${rRec?`<div class="traffic-row">
         <div class="tdot" style="background:${recColor}"></div>
         <div style="flex:1"><div style="font-size:12px;font-weight:600">Recovery time</div>
-        <div style="font-size:11px;color:#a8c4e0">${rRec}hrs · ${rRec<=24?'cleared for training':rRec<=48?'light training only':'full rest recommended'}</div></div>
-        <div style="font-size:13px;color:${recColor}">${rRec<=24?'✓':rRec<=48?'⚠':'✗'}</div>
+        <div style="font-size:11px;color:#a8c4e0">${recRemaining===0?'✓ Fully recovered':recRemaining+'hrs remaining'} · ${rRec}hrs total</div></div>
+        <div style="font-size:13px;color:${recColor}">${recRemaining===0?'✓':recRemaining<=12?'✓':'⚠'}</div>
       </div>`:''}
       ${rStatus?`<div class="traffic-row">
         <div class="tdot" style="background:${statusColor}"></div>
