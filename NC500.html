@@ -349,15 +349,14 @@
       <div class="form-group"><label>Training status</label>
         <select id="f-tstatus">
           <option value="">— select —</option>
+          <option value="Peaking">Peaking</option>
           <option value="Productive">Productive</option>
           <option value="Maintaining">Maintaining</option>
-          <option value="Peaking">Peaking</option>
           <option value="Strained">Strained</option>
-          <option value="Detraining">Detraining</option>
+          <option value="Unproductive">Unproductive</option>
           <option value="Overreaching">Overreaching</option>
-          <option value="Peaking">Peaking</option>
+          <option value="Recovery">Recovery</option>
           <option value="Detraining">Detraining</option>
-          <option value="Overreaching">Overreaching</option>
         </select>
       </div>
     </div>
@@ -1498,7 +1497,7 @@ async function renderHome(){
     const hoursElapsed = rideDate ? Math.floor((today_d - new Date(rideDate+'T12:00:00')) / (1000*60*60)) : 0;
     const recRemaining = rRec ? Math.max(0, rRec - hoursElapsed) : null;
     const recColor = !rRec ? 'var(--text3)' : recRemaining === 0 ? 'var(--green-text)' : recRemaining <= 12 ? 'var(--green-text)' : recRemaining <= 24 ? 'var(--amber-text)' : 'var(--red-text)';
-    const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : (rStatus==='Maintaining'||rStatus==='Strained') ? 'var(--amber-text)' : 'var(--red-text)';
+    const statusColor = !rStatus ? 'var(--text3)' : (rStatus==='Productive'||rStatus==='Peaking') ? 'var(--green-text)' : (rStatus==='Maintaining'||rStatus==='Strained'||rStatus==='Recovery') ? 'var(--amber-text)' : 'var(--red-text)';
     const signals = [rHRV?hrvColor:null, rRec?recColor:null, rStatus?statusColor:null].filter(Boolean);
     const overallRed = signals.filter(s=>s==='var(--red-text)').length;
     const overallAmber = signals.filter(s=>s==='var(--amber-text)').length;
@@ -1528,7 +1527,7 @@ async function renderHome(){
       ${rRec?`<div class="traffic-row">
         <div class="tdot" style="background:${recColor}"></div>
         <div style="flex:1"><div style="font-size:12px;font-weight:600">Recovery time</div>
-        <div style="font-size:11px;color:#a8c4e0">${recRemaining===0?'✓ Fully recovered':recRemaining+'hrs remaining'} · ${rRec}hrs total</div></div>
+        <div style="font-size:11px;color:#a8c4e0">${recRemaining===0?'✓ Fully recovered':recRemaining+'hrs remaining'}</div></div>
         <div style="font-size:13px;color:${recColor}">${recRemaining===0?'✓':recRemaining<=12?'✓':'⚠'}</div>
       </div>`:''}
       ${rStatus?`<div class="traffic-row">
