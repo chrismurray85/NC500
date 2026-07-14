@@ -723,6 +723,12 @@ const FTP_BY_MONTH = {
   March:230, April:230, May:230
 };
 
+const WKG_BY_MONTH = {
+  June:2.24, July:2.30, August:2.45, September:2.53, October:2.61,
+  November:2.76, December:2.76, January:2.84, February:2.99,
+  March:3.06, April:3.10, May:3.20
+};
+
 const ZONES = [
   {key:'Z1', name:'Recovery', lo:0,   hi:55},
   {key:'Z2', name:'Endurance', lo:56,  hi:75},
@@ -1555,7 +1561,14 @@ async function renderHome(){
     </div>`).join('')}
   </div>`;
   const benchTargetFTP = nextBenchmark ? (FTP_BY_MONTH[nextBenchmark.month_label] || 170) : null;
-  const ftpGap = benchTargetFTP ? benchTargetFTP - currentFTP : null;
+  const benchTargetWkg = nextBenchmark ? (WKG_BY_MONTH[nextBenchmark.month_label] || 2.24) : null;
+  // Find next W/kg target that's actually ahead of current
+  const nextWkgTarget = benchTargetWkg && benchTargetWkg > currentWkg ? benchTargetWkg :
+    Object.values(WKG_BY_MONTH).find(v => v > currentWkg) || 3.20;
+  const nextWkgMonth = benchTargetWkg && benchTargetWkg > currentWkg ? nextBenchmark?.month_label :
+    Object.keys(WKG_BY_MONTH).find(k => WKG_BY_MONTH[k] > currentWkg) || 'May';
+  const wkgGap = (nextWkgTarget - currentWkg).toFixed(2);
+  const wkgAhead = currentWkg >= (benchTargetWkg||0);
   html += `<div class="hcard">
     <div class="hcard-label">Next ${nextBenchmark?.tag==='Milestone' ? 'milestone' : 'benchmark'}</div>
     ${nextBenchmark ? `
@@ -1564,11 +1577,11 @@ async function renderHome(){
     <div style="border-top:1px solid #3a5068;padding-top:8px;margin-top:8px">
       <div style="font-size:11px;color:#7fa3c8;margin-bottom:6px">${nextBenchmark.tag==='Milestone' ? 'FTP ramp test + HR drift' : 'FTP ramp test + Alpe'}</div>
       <div style="display:flex;align-items:baseline;gap:6px">
-        <div style="font-size:18px;font-weight:700;color:#f0f6ff">${benchTargetFTP}W</div>
-        <div style="font-size:11px;color:#7fa3c8">target FTP</div>
-        ${ftpGap > 0 ? `<div style="font-size:12px;color:var(--amber-text);font-weight:600;margin-left:auto">+${ftpGap}W needed</div>` : `<div style="font-size:12px;color:var(--green-text);font-weight:600;margin-left:auto">✓ on target</div>`}
-      </div>
-      <div style="font-size:11px;color:#7fa3c8;margin-top:3px">current ${currentFTP}W · gap ${ftpGap > 0 ? ftpGap+'W' : 'none'}</div>
+        <div style="font-size:18px;font-weight:700;color:#f0f6ff">${nextWkgTarget.toFixed(2)} <span style="font-size:12px;font-weight:400;color:#7fa3c8">W/kg target${wkgAhead?' (next)':''}</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <div style="font-size:11px;color:#7fa3c8">current <span style="color:#f0f6ff;font-weight:600">${currentWkg.toFixed(2)}</span></div>
+          ${parseFloat(wkgGap) > 0 ? `<div style="font-size:12px;color:var(--amber-text);font-weight:600;margin-left:auto">+${wkgGap} to go</div>` : `<div style="font-size:12px;color:var(--green-text);font-weight:600;margin-left:auto">✓ ahead of target</div>`}
+        </div>
     </div>` : '<div class="hcard-sub">No upcoming benchmark</div>'}
   </div>
 </div>`; // close 2-col zones+benchmark
