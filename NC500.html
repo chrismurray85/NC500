@@ -1587,26 +1587,74 @@ async function renderHome(){
 </div>`; // close 2-col zones+benchmark
   html += `</div>`; // close ROW1 wrapper
 
-  // ROW 2: W/kg full width
+  // ROW 2: W/kg full width — journey chart
   html += `<div style="margin-bottom:12px">`;
-  html += `<div class="hcard" style="min-width:0;overflow:hidden">
-    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <div style="min-width:80px">
+  // Build monthly W/kg data from benchmark results + current
+  const wkgMonthOrder = ['June','July','August','September','October','November','December','January','February','March','April','May'];
+  const currentMonthLabel = today_d.toLocaleDateString('en-US',{month:'long'});
+  const currentMonthIdx = wkgMonthOrder.indexOf(currentMonthLabel);
+  // Actual points: start + any logged benchmarks
+  const benchResults = (()=>{ try{ return JSON.parse(localStorage.getItem('nc500_benchmark_results')||'[]'); }catch(e){ return []; } })();
+  const actualWkgPts = [{month:'June',val:2.24,idx:0}];
+  benchResults.forEach(r=>{
+    const [yr,mo] = r.month.split('-');
+    const mLabel = new Date(yr,parseInt(mo)-1,1).toLocaleDateString('en-US',{month:'long'});
+    const mIdx = wkgMonthOrder.indexOf(mLabel);
+    if(r.wkg && mIdx >= 0) actualWkgPts.push({month:mLabel, val:parseFloat(r.wkg), idx:mIdx});
+  });
+  // Add current position if not already in benchmarks
+  const nowFracIdx = currentMonthIdx + (today_d.getDate()/30);
+  if(!actualWkgPts.find(p=>p.month===currentMonthLabel)) actualWkgPts.push({month:currentMonthLabel, val:currentWkg, idx:nowFracIdx});
+  actualWkgPts.sort((a,b)=>a.idx-b.idx);
+  // Projected points from current to target
+  const projWkgPts = [{month:currentMonthLabel, val:currentWkg, idx:nowFracIdx}];
+  wkgMonthOrder.forEach((m,i)=>{ if(i > Math.floor(nowFracIdx) && WKG_BY_MONTH[m]) projWkgPts.push({month:m,val:WKG_BY_MONTH[m],idx:i}); });
+  const minWkg=2.0, maxWkg=3.4, totalMonths=12;
+  const svgW=560, svgH=120, pL=28, pR=12, pT=18, pB=24;
+  const cW=svgW-pL-pR, cH=svgH-pT-pB;
+  const xS=idx=>`${pL+(idx/totalMonths)*cW}`;
+  const yS=v=>`${pT+cH-((v-minWkg)/(maxWkg-minWkg))*cH}`;
+  // Grid lines
+  let chartSvg = '';
+  [2.0,2.4,2.8,3.2].forEach(v=>{
+    const y=parseFloat(yS(v));
+    chartSvg += `<line x1="${pL}" x2="${svgW-pR}" y1="${y}" y2="${y}" stroke="#3a5068" stroke-width="${v===3.2?'0':'0.5'}"/>`;
+    chartSvg += `<text x="${pL-3}" y="${y+4}" font-size="9" fill="#7fa3c8" text-anchor="end">${v.toFixed(1)}</text>`;
+  });
+  // Target line
+  chartSvg += `<line x1="${pL}" x2="${svgW-pR}" y1="${yS(3.2)}" y2="${yS(3.2)}" stroke="#4ade80" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+  chartSvg += `<text x="${svgW-pR}" y="${parseFloat(yS(3.2))-3}" font-size="9" fill="#4ade80" text-anchor="end">target 3.2</text>`;
+  // Area under actual
+  if(actualWkgPts.length>1){
+    const areaPath = actualWkgPts.map((p,i)=>`${i===0?'M':'L'}${xS(p.idx)},${yS(p.val)}`).join(' ')
+      +` L${xS(actualWkgPts[actualWkgPts.length-1].idx)},${pT+cH} L${pL},${pT+cH} Z`;
+    chartSvg += `<path d="${areaPath}" fill="#60a5fa" opacity="0.15"/>`;
+    chartSvg += `<path d="${actualWkgPts.map((p,i)=>`${i===0?'M':'L'}${xS(p.idx)},${yS(p.val)}`).join(' ')}" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+  // Projected line
+  if(projWkgPts.length>1) chartSvg += `<path d="${projWkgPts.map((p,i)=>`${i===0?'M':'L'}${xS(p.idx)},${yS(p.val)}`).join(' ')}" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3" stroke-linecap="round"/>`;
+  // Current dot + label
+  const curX=parseFloat(xS(nowFracIdx)), curY=parseFloat(yS(currentWkg));
+  chartSvg += `<circle cx="${curX}" cy="${curY}" r="5" fill="#60a5fa"/>`;
+  chartSvg += `<text x="${curX}" y="${curY-9}" font-size="10" fill="#f0f6ff" text-anchor="middle" font-weight="600">${currentWkg.toFixed(2)}</text>`;
+  // Month labels
+  [{l:"Jun '26",i:0},{l:'Sep',i:3},{l:'Dec',i:6},{l:'Mar',i:9},{l:"Jun '27",i:12}].forEach(m=>{
+    chartSvg += `<text x="${xS(m.i)}" y="${svgH}" font-size="9" fill="#7fa3c8" text-anchor="middle">${m.l}</text>`;
+  });
+  html += `<div class="hcard" style="min-width:0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div>
         <div class="hcard-label">W/kg</div>
         <div class="hcard-val" style="line-height:1">${currentWkg.toFixed(2)}</div>
-        <div style="font-size:12px;color:#a8c4e0;margin-top:2px">Target <span style="color:var(--green-text);font-weight:700">3.2+</span></div>
-        <div style="font-size:11px;color:#7fa3c8;margin-top:2px">${currentFTP}W · ${currentWeight} lbs</div>
+        <div style="font-size:11px;color:#7fa3c8;margin-top:3px">${currentFTP}W · ${currentWeight} lbs</div>
       </div>
-      <div style="flex:1;min-width:160px">
-        <svg width="100%" height="40" viewBox="0 0 300 40" preserveAspectRatio="none" style="display:block">
-          <line x1="0" y1="34" x2="300" y2="34" stroke="#3a5068" stroke-width="0.5"/>
-          <polyline points="0,30 300,4" fill="none" stroke="#3a5068" stroke-width="1" stroke-dasharray="3,2"/>
-          <polyline points="0,30 ${Math.round((currentWkg/3.2)*300*0.9)},30" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="${Math.round((currentWkg/3.2)*300*0.9)}" cy="30" r="4" fill="#60a5fa"/>
-        </svg>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:#7fa3c8;margin-top:3px"><span>now (${currentWkg.toFixed(2)})</span><span>target 3.2 · Jun 2027</span></div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700;color:#4ade80">3.2+</div>
+        <div style="font-size:11px;color:#7fa3c8">target · Jun 2027</div>
+        <div style="font-size:12px;color:#a8c4e0;margin-top:2px">+${(3.2-currentWkg).toFixed(2)} to go</div>
       </div>
     </div>
+    <svg width="100%" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block">${chartSvg}</svg>
   </div>`;
 
   // ---- Load chart ----
