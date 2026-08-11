@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NC500 — Chris</title>
+<title>NC500</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -228,7 +228,7 @@
 
 <div class="header">
   <div>
-    <div class="header-title">NC500 — Chris</div>
+    <div class="header-title">NC500</div>
     <div class="header-sub">~850 km · Scotland's north coast · Jun/Jul 2026</div>
   </div>
   <div class="header-stats">
@@ -594,26 +594,14 @@ async function testGsConnection(){
   }
 }
 
-/* ---- Core storage: Google Sheets via JSONP (bypasses CORS) ---- */
-function jsonp(url){
-  return new Promise((resolve, reject)=>{
-    const cb = 'nc500cb_' + Date.now();
-    const script = document.createElement('script');
-    const timeout = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 8000);
-    function cleanup(){ delete window[cb]; script.remove(); clearTimeout(timeout); }
-    window[cb] = (data)=>{ cleanup(); resolve(data); };
-    script.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
-    script.onerror = ()=>{ cleanup(); reject(new Error('script error')); };
-    document.head.appendChild(script);
-  });
-}
-
+/* ---- Core storage: Google Sheets via fetch (works on GitHub Pages) ---- */
 async function loadRides(){
   if(_ridesCache) return _ridesCache;
   if(_gsUrl){
     setSyncStatus('syncing','Syncing…');
     try{
-      const data = await jsonp(_gsUrl + '?action=list');
+      const resp = await fetch(_gsUrl + '?action=list', {method:'GET'});
+      const data = await resp.json();
       if(data.ok){
         _ridesCache = data.rides || [];
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(_ridesCache)); }catch(e){}
@@ -633,10 +621,10 @@ async function saveRides(rides){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(rides)); }catch(e){}
   if(!_gsUrl) return;
   setSyncStatus('syncing','Saving…');
-  // Try JSONP with base64-encoded rides to avoid URL encoding issues
   try{
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(rides))));
-    const data = await jsonp(_gsUrl + '?action=saveAll&b64rides=' + b64);
+    const resp = await fetch(_gsUrl + '?action=saveAll&b64rides=' + b64, {method:'GET'});
+    const data = await resp.json();
     if(data.ok){
       setSyncStatus('synced','Saved ✓');
       setTimeout(()=>setSyncStatus('',''), 2000);
@@ -1444,7 +1432,7 @@ async function renderHome(){
   let html = `<div class="home-wrap">
   <div class="home-hdr">
     <div>
-      <div style="font-size:18px;font-weight:700">${greet}, Chris</div>
+      <div style="font-size:18px;font-weight:700">${greet}</div>
       <div style="font-size:13px;color:var(--text3);margin-top:2px">${today_d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'})}${currentWeek ? ' · Week ' + currentWeek.week + ' of 46' : ''}</div>
       <button onclick="goLogRide()" class="btn" style="margin-top:10px;font-size:13px;padding:7px 16px;font-weight:600">+ Log today's ride</button>
     </div>
