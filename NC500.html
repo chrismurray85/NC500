@@ -1041,8 +1041,9 @@ function clearForm(){
   document.getElementById('f-tstatus').value='';
   clearFood();
   document.getElementById('f-date').value=today();
-  document.getElementById('f-weight').value='167.6';
-  document.getElementById('f-ftp').value='170';
+  const _s = loadSettings();
+  document.getElementById('f-weight').value=_s.weight||'167.6';
+  document.getElementById('f-ftp').value=_s.ftp||'170';
 }
 
 const BR_KEY = 'nc500_benchmark_results';
@@ -1349,6 +1350,7 @@ function saveSettings(s){
   try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }catch(e){}
 }
 
+let _settingsSaveTimer = null;
 function saveSettingsFromForm(){
   const s = loadSettings();
   const ftp = parseInt(document.getElementById('s-ftp').value);
@@ -1358,7 +1360,9 @@ function saveSettingsFromForm(){
   if(weight > 0) s.weight = weight;
   if(hrv > 0) s.hrv_baseline = hrv;
   saveSettings(s);
-  renderHome();
+  // Debounce re-render so it doesn't fire on every keystroke and jump the page
+  clearTimeout(_settingsSaveTimer);
+  _settingsSaveTimer = setTimeout(()=>{ renderHome(); }, 800);
 }
 
 /* ============ HOME TAB ============ */
