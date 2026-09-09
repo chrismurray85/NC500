@@ -1164,7 +1164,7 @@ function toggleRideForm(forceOpen, skipPlanRefReset){
   const show = forceOpen !== undefined ? forceOpen : isHidden;
   card.style.display = show ? '' : 'none';
   btn.textContent = show ? '× Cancel' : '+ Log new ride';
-  if(show && !skipPlanRefReset){ try{ populatePlanRefDropdown(''); }catch(e){ console.warn('plan dropdown error',e); } }
+  if(show && !skipPlanRefReset){ clearForm(); try{ populatePlanRefDropdown(''); }catch(e){ console.warn('plan dropdown error',e); } }
 }
 
 async function editRide(id){
