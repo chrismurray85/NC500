@@ -231,10 +231,10 @@
     <div class="header-title">NC500</div>
     <div class="header-sub">~850 km · Scotland's north coast · Jun/Jul 2026</div>
   </div>
-  <div class="header-stats">
-    <div class="hstat"><div class="hstat-val">170W</div><div class="hstat-label">Current FTP</div></div>
-    <div class="hstat"><div class="hstat-val">167.6 lbs</div><div class="hstat-label">Current weight</div></div>
-    <div class="hstat"><div class="hstat-val">2.20 W/kg</div><div class="hstat-label">Current W/kg</div></div>
+  <div class="header-stats" id="header-stats">
+    <div class="hstat"><div class="hstat-val" id="hstat-ftp">170W</div><div class="hstat-label">Current FTP</div></div>
+    <div class="hstat"><div class="hstat-val" id="hstat-weight">167.6 lbs</div><div class="hstat-label">Current weight</div></div>
+    <div class="hstat"><div class="hstat-val" id="hstat-wkg">2.20 W/kg</div><div class="hstat-label">Current W/kg</div></div>
     <div class="hstat"><div class="hstat-val">230W+</div><div class="hstat-label">Target FTP</div></div>
   </div>
 </div>
@@ -1361,6 +1361,7 @@ function saveSettingsFromForm(){
   if(hrv > 0) s.hrv_baseline = hrv;
   saveSettings(s);
   // Debounce re-render so it doesn't fire on every keystroke and jump the page
+  updateHeaderStats();
   clearTimeout(_settingsSaveTimer);
   _settingsSaveTimer = setTimeout(()=>{ renderHome(); }, 800);
 }
@@ -2098,6 +2099,20 @@ calcWkg();
 populateMonthFilter();
 renderWeeks();
 renderDailyQuote();
+// Update header stats from settings
+function updateHeaderStats(){
+  const s = loadSettings();
+  const ftp = s.ftp || 170;
+  const weight = s.weight || 167.6;
+  const wkg = (ftp / (weight / 2.20462)).toFixed(2);
+  const ftpEl = document.getElementById("hstat-ftp");
+  const wEl = document.getElementById("hstat-weight");
+  const wkgEl = document.getElementById("hstat-wkg");
+  if(ftpEl) ftpEl.textContent = ftp + "W";
+  if(wEl) wEl.textContent = weight + " lbs";
+  if(wkgEl) wkgEl.textContent = wkg + " W/kg";
+}
+updateHeaderStats();
 // Load rides first, then render home with real data
 (async()=>{
   await loadRides();
