@@ -616,17 +616,14 @@ async function loadRides(){
   try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; }
 }
 
-async function saveRides(rides){
+async function saveRides(rides, changedRide){
   _ridesCache = rides;
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(rides)); }catch(e){}
-  if(!_gsUrl) return;
+  if(!_gsUrl || !changedRide) return;
   setSyncStatus('syncing','Saving…');
   try{
-    const resp = await fetch(_gsUrl, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'saveAll', rides})
-    });
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(changedRide))));
+    const resp = await fetch(_gsUrl + '?action=appendRide&b64ride=' + b64);
     const data = await resp.json();
     if(data.ok){
       setSyncStatus('synced','Saved ✓');
@@ -1028,7 +1025,7 @@ async function saveRide(){
     rides.push(d);
   }
   rides.sort((a,b)=>cleanDate(b.date).localeCompare(cleanDate(a.date)));
-  await saveRides(rides);
+  await saveRides(rides, d);
   document.getElementById('log-status').textContent=editingId?'Ride updated!':'Ride saved!';
   setTimeout(()=>document.getElementById('log-status').textContent='',3000);
   toggleRideForm(false);
@@ -1239,9 +1236,20 @@ function monthLabel(ds){
 
 async function deleteRide(id){
   const rides=await loadRides();
-  _ridesCache=null;
-  await saveRides(rides.filter(r=>String(r.id)!==String(id)));
+  const filtered=rides.filter(r=>String(r.id)!==String(id));
+  _ridesCache=filtered;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered)); }catch(e){}
   if(String(editingId)===String(id)) cancelEdit();
+  // Delete from sheet directly by id
+  if(_gsUrl){
+    setSyncStatus('syncing','Deleting…');
+    try{
+      const resp = await fetch(_gsUrl + '?action=deleteRide&id=' + encodeURIComponent(id));
+      const data = await resp.json();
+      if(data.ok){ setSyncStatus('synced','Deleted ✓'); setTimeout(()=>setSyncStatus('',''),2000); }
+      else { setSyncStatus('error','Delete error'); }
+    } catch(e){ setSyncStatus('error','Delete failed — removed locally'); }
+  }
   renderHistory(); renderMiniSummary(); renderHome();
 }
 
