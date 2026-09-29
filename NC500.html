@@ -622,8 +622,11 @@ async function saveRides(rides){
   if(!_gsUrl) return;
   setSyncStatus('syncing','Saving…');
   try{
-    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(rides))));
-    const resp = await fetch(_gsUrl + '?action=saveAll&b64rides=' + b64, {method:'GET'});
+    const resp = await fetch(_gsUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'saveAll', rides})
+    });
     const data = await resp.json();
     if(data.ok){
       setSyncStatus('synced','Saved ✓');
