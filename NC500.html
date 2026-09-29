@@ -603,7 +603,7 @@ async function loadRides(){
       const resp = await fetch(_gsUrl + '?action=list', {method:'GET'});
       const data = await resp.json();
       if(data.ok){
-        _ridesCache = data.rides || [];
+        _ridesCache = (data.rides || []).sort((a,b)=>cleanDate(b.date).localeCompare(cleanDate(a.date)));
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(_ridesCache)); }catch(e){}
         setSyncStatus('synced','Synced ✓');
         setTimeout(()=>setSyncStatus('',''), 2000);
@@ -644,7 +644,7 @@ function initGsSetup(){
     document.getElementById('gs-url-input').value = _gsUrl;
     // Wire up sheet link — derive sheet URL from script URL
     const sheetLink = document.getElementById('sheet-link');
-    if(sheetLink){ sheetLink.style.display='inline'; sheetLink.href='https://docs.google.com/spreadsheets/d/1jn4LyTnMHPPyM2eB03gZSCmPzrMQYiBGKRMQhF_Vppg/edit?gid=372953866#gid=372953866'; }
+    if(sheetLink){ sheetLink.style.display='inline'; sheetLink.href='https://docs.google.com/spreadsheets/d/1q4dM2qy30xg4PTCC3-iHyvY0kjZaqH_djsTwlXp5GsI/edit'; }
   } else {
     document.getElementById('gs-setup-banner').style.display = 'block';
     document.getElementById('gs-status-bar').style.display = 'none';
