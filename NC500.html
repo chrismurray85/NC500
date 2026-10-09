@@ -1240,7 +1240,8 @@ async function editRide(id){
   fillZones('f-hz', 5, r.hr_zones);
   // restore food if editing
   clearFood();
-  if(r.carbs) { _foodCarbs=parseInt(r.carbs)||0; updateFoodSummary(); }
+  _foodCarbs=parseInt(r.carbs)||0; _bottlesHydro=parseInt(r.bottles_hydro)||0; _bottlesBeta=parseInt(r.bottles_beta)||0;
+  updateFoodSummary();
   document.getElementById('form-title').textContent='Edit ride';
   document.getElementById('save-btn').textContent='Update ride';
   document.getElementById('cancel-edit-btn').style.display='inline-block';
